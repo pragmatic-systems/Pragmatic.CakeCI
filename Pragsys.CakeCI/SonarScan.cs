@@ -5,7 +5,7 @@ using Cake.Core.Diagnostics;
 namespace Pragsys.CakeCI;
 
 [CakeAliasCategory("SonarQube")]
-public static class SonarResults
+public static class SonarScan
 {
     [CakeMethodAlias]
     [CakeAliasCategory("Scan Check")]
