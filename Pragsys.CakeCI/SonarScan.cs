@@ -4,8 +4,8 @@ using Cake.Core.Diagnostics;
 
 namespace Pragsys.CakeCI;
 
-[CakeAliasCategory("SonarQube")]
-public static class SonarScan
+[CakeAliasCategory("PragsysCI")]
+public static class PragsysCI
 {
     [CakeMethodAlias]
     [CakeAliasCategory("Scan Check")]
@@ -15,5 +15,6 @@ public static class SonarScan
         logger.Information("=========================================");
         logger.Information("SONAR SCAN CHECK SHIP");
         logger.Information("=========================================");
+        await Task.Delay(100);
     }
 }
