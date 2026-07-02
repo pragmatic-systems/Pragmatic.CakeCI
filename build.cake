@@ -1,6 +1,10 @@
 ﻿﻿///////////////////////////////////////////////////////////////////////////////
 // ADDINS
 ///////////////////////////////////////////////////////////////////////////////
+
+// NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
+#addin nuget:?package=Pragsys.CakeCI&version=0.1.0-local
+
 #addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.Docker&version=1.3.0
 #addin nuget:?package=Cake.Sonar&version=5.0.0
@@ -14,47 +18,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
-var target = Argument("target", "Default");
 
+var cakeMixFile = Argument("cakemix", "build.cakemix");
+var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 
 // Nuget Params
-var nugetPackageSource = Argument<string>("Source", null)			// Input from cmd args to Cake 
-	?? EnvironmentVariable<string>("INPUT_SOURCE", null);			// Input from GHA to Cake
-
-var nugetApiKey = Argument<string>("ApiKey", null)					// Input from cmd args to Cake 
-	?? EnvironmentVariable<string>("INPUT_APIKEY", null);			// Input from GHA to Cake
-	
-var versionNumber = Argument<string>("VersionOverride", null)		// Input from cmd args to Cake 
-	?? EnvironmentVariable<string>("INPUT_VERSIONOVERRIDE", null);	// Input from GHA to Cake
+var nugetPackageSource = CiArgument("Source");
+var nugetApiKey = CiArgument("ApiKey");			
+var versionNumber = CiArgument("VersionOverride");	
 	
 // Container Params
-var containerRegistry = Argument<string>("ContainerRegistry", null) 
-	?? EnvironmentVariable<string>("INPUT_CONTAINERREGISTRY", null);
-	
-var containerRegistryToken = Argument<string>("ContainerRegistryToken", null) 
-	?? EnvironmentVariable<string>("INPUT_CONTAINERREGISTRYTOKEN", null);
-
-var containerRegistryUserName = Argument<string>("ContainerRegistryUserName", null)
-	?? EnvironmentVariable<string>("INPUT_CONTAINERREGISTRYUSERNAME", null);
+var containerRegistry = CiArgument("ContainerRegistry");
+var containerRegistryToken = CiArgument("ContainerRegistryToken");
+var containerRegistryUserName = CiArgument("ContainerRegistryUserName");
 
 // Sonar Params
-var sonarOrg = Argument<string>("SonarOrg", null)
-    ?? EnvironmentVariable<string>("INPUT_SONARORG", null);
-		
-var sonarToken = Argument<string>("SonarToken", null)
-    ?? EnvironmentVariable<string>("INPUT_SONARTOKEN", null);
+var sonarOrg = CiArgument("SonarOrg");
+var sonarToken = CiArgument("SonarToken");
+var sonarProjectKey = CiArgument("SonarProjectKey");
+var sonarProjectName = CiArgument("SonarProjectName");
+var sonarHostUrl = CiArgument("SonarHostUrl", "http://localhost:9000");
 
-var sonarProjectKey = Argument<string>("SonarProjectKey", null)
-    ?? EnvironmentVariable<string>("INPUT_SONARPROJECTKEY", null);
-
-var sonarProjectName = Argument<string>("SonarProjectName", null)
-    ?? EnvironmentVariable<string>("INPUT_SONARPROJECTNAME", null);
-
-var sonarHostUrl = Argument<string>("SonarHostUrl", null)
-    ?? EnvironmentVariable<string>("INPUT_SONARHOSTURL", null)
-		?? "http://localhost:9000";
-
+// Artifact Folders
 var artifactsFolder = "./artifacts";
 var packagesFolder = System.IO.Path.Combine(artifactsFolder, "packages");
 var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
@@ -67,23 +53,7 @@ BuildManifest buildManifest;
 ///////////////////////////////////////////////////////////////////////////////
 Setup(context =>
 {
-	var cakeMixFile = "build.cakemix";
-
-	// Load BuildManifest
-	if (!System.IO.File.Exists(cakeMixFile))
-	{
-		Warning("No cakemix file found, creating...");
-
-		var manifest = new BuildManifest
-		{
-			NugetPackages = new string[0],
-			DockerPackages = System.IO.Directory.GetFiles("./src/", "Dockerfile", SearchOption.AllDirectories),
-			Benchmarks = System.IO.Directory.GetFiles(".", "*.Benchmark.csproj", SearchOption.AllDirectories),
-		};
-		SerializeJsonToPrettyFile(cakeMixFile, manifest);
-	}
-
-	buildManifest = DeserializeJsonFromFile<BuildManifest>(cakeMixFile);
+	buildManifest = LoadBuildManifest(cakeMixFile);
 
 	// Clean artifacts
 	if (System.IO.Directory.Exists(artifactsFolder))
@@ -385,11 +355,3 @@ Task("Default")
 	.IsDependentOn("__Benchmark");
 
 RunTarget(target);
-
-public class BuildManifest
-{
-	public string[] NugetPackages { get; set; }
-	public string[] DockerPackages { get; set; }
-	public string[] Benchmarks { get; set; }
-	public Dictionary<string, string> ApiSpecs { get; set; }
-}

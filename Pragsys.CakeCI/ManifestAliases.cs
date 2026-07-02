@@ -46,7 +46,8 @@ public static class ManifestAliases
     {
         return new BuildManifest
         {
-            DockerPackages = System.IO.Directory.GetFiles("./src/", "Dockerfile", SearchOption.AllDirectories),
+            NugetPackages = [],
+            DockerPackages = System.IO.Directory.GetFiles(".", "Dockerfile", SearchOption.AllDirectories),
             Benchmarks = System.IO.Directory.GetFiles(".", "*.Benchmark.csproj", SearchOption.AllDirectories),
         };
     }
