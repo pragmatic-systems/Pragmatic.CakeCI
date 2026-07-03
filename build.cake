@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
-#addin nuget:?package=Pragsys.CakeCI&version=0.19.0-local
+#addin nuget:?package=Pragsys.CakeCI&version=0.20.0-local
 
 #addin nuget:?package=Cake.Docker&version=1.3.0
 #addin nuget:?package=Cake.Sonar&version=5.0.0
@@ -93,24 +93,7 @@ Task("__Test")
 
 Task("__Benchmark")
 	.Does(() => {
-
-		foreach(var benchmark in buildManifest.Benchmarks)
-		{
-			Information($"Benchmarking {benchmark}...");
-			var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmark);
-
-			var settings = new DotNetRunSettings
-			{
-				Configuration = "Release",
-				ArgumentCustomization = args => {
-					return args
-						.Append("--artifacts")
-						.AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
-				}
-			};
-
-			DotNetRun(benchmark, settings);
-		}
+		CiBenchmark();
 	});
 
 Task("__LintCheck")

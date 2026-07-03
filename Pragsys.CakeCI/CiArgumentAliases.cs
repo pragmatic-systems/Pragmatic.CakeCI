@@ -120,4 +120,42 @@ public static class CiArgumentAliases
         }
         context.Log.Information("Lint check passed – no formatting changes required.");
     }
+
+    [CakeMethodAlias]
+    [CakeAliasCategory("Benchmark")]
+    public static void CiBenchmark(this ICakeContext context)
+    {
+        var scriptDirectory = context.Environment.WorkingDirectory;
+        var artifactsFolder = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
+
+        var benchmarkProjects = System.IO.Directory.GetFiles(
+                    "./",
+                    "*.Benchmark.csproj",
+                    System.IO.SearchOption.AllDirectories);
+
+        foreach (var benchmarkProject in benchmarkProjects)
+        {
+            var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmarkProject);
+            context.Log.Information($"Benchmarking {benchName}...");
+
+            var settings = new ProcessSettings();
+            settings.WithArguments(a =>
+            {
+                a.Append("run");
+                a.Append("--project");
+                a.Append(benchmarkProject);
+                a.Append("--configuration");
+                a.Append("Release");
+                a.Append("--artifacts");
+                a.AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
+            });
+
+            using var result = context.ProcessRunner.Start("dotnet", settings);
+            result.WaitForExit();
+            if (result.GetExitCode() != 0)
+            {
+                throw new CakeException($"Benchmark failed: {benchName}");
+            }
+        }
+    }
 }
