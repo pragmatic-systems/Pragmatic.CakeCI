@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
-#addin nuget:?package=Pragsys.CakeCI&version=0.20.0-local
+#addin nuget:?package=Pragsys.CakeCI&version=0.21.0-local
 
 #addin nuget:?package=Cake.Docker&version=1.3.0
 #addin nuget:?package=Cake.Sonar&version=5.0.0
@@ -11,7 +11,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
-#tool dotnet:?package=GitVersion.Tool&version=5.12.0
 #tool nuget:?package=MSBuild.SonarQube.Runner.Tool&version=4.8.0
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,22 +133,7 @@ Task("__EndSonarScan")
 
 Task("__VersionInfo")
 	.Does(() => {
-
-		if (string.IsNullOrEmpty(versionNumber))
-		{
-			var version = GitVersion();
-			var options = new System.Text.Json.JsonSerializerOptions
-			{
-				WriteIndented = true
-			};
-
-			var json = System.Text.Json.JsonSerializer.Serialize(version, options);
-
-			Information("GitVersion Info: " + json);
-			versionNumber = version.SemVer;
-		}
-
-		Information("Version Number: " + versionNumber);
+		versionNumber = CiVersion(versionNumber);
 	});
 
 Task("__NugetPack")

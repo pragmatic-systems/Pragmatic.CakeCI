@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.Diagnostics;
@@ -119,6 +120,59 @@ public static class CiArgumentAliases
             throw new CakeException("Lint check failed: code formatting violations detected. Run `dotnet format`");
         }
         context.Log.Information("Lint check passed – no formatting changes required.");
+    }
+
+    [CakeMethodAlias]
+    [CakeAliasCategory("Version")]
+    public static string CiVersion(this ICakeContext context, string? versionOverride = null)
+    {
+        if (!string.IsNullOrEmpty(versionOverride))
+        {
+            context.Log.Information($"Version Number: {versionOverride}");
+            return versionOverride;
+        }
+
+        context.Log.Information("Resolving version from GitVersion...");
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            Arguments = "gitversion",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+        };
+
+        using var process = Process.Start(startInfo);
+        if (process is null)
+        {
+            throw new CakeException("Failed to start GitVersion process.");
+        }
+
+        var output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            throw new CakeException($"GitVersion exited with code {process.ExitCode}: {output}");
+        }
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(output);
+            var semVer = doc.RootElement.GetProperty("SemVer").GetString();
+
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            var json = System.Text.Json.JsonSerializer.Serialize(doc.RootElement, options);
+
+            context.Log.Information($"GitVersion Info: {json}");
+            context.Log.Information($"Version Number: {semVer}");
+
+            return semVer ?? throw new CakeException("GitVersion returned a null SemVer.");
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            throw new CakeException($"Failed to parse GitVersion output: {output}");
+        }
     }
 
     [CakeMethodAlias]
