@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Pragsys.CakeCI</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.0-local</Version>
     <Authors>Pragsys</Authors>
     <Description>Cake CI aliases for Pragsys build tooling</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>

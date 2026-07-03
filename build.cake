@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
-#addin nuget:?package=Pragsys.CakeCI&version=0.16.0-local
+#addin nuget:?package=Pragsys.CakeCI&version=0.19.0-local
 
 #addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.Docker&version=1.3.0
@@ -22,31 +22,35 @@
 var cakeMixFile = Argument("cakemix", "build.cakemix");
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
-var versionNumber = CiArgument("VersionOverride");	
+var versionNumber = CiArgument("VersionOverride");
 
-// Nuget Params
-var nugetPackageSource = CiArgument("Source");
-var nugetApiKey = CiArgument("ApiKey");			
+BuildManifest buildManifest;
 
-// Container Params
-var containerRegistry = CiArgument("ContainerRegistry");
-var containerRegistryToken = CiArgument("ContainerRegistryToken");
-var containerRegistryUserName = CiArgument("ContainerRegistryUserName");
-
-// Sonar Params
-var sonarOrg = CiArgument("SonarOrg");
-var sonarToken = CiArgument("SonarToken");
-var sonarProjectKey = CiArgument("SonarProjectKey");
-var sonarProjectName = CiArgument("SonarProjectName");
-var sonarHostUrl = CiArgument("SonarHostUrl", "http://localhost:9000");
+var nugetArgs = new NugetArgs
+{
+    Source = CiArgument("Source"),
+    ApiKey = CiArgument("ApiKey"),
+};
+var containerArgs = new ContainerArgs
+{
+    Registry = CiArgument("ContainerRegistry"),
+    Token = CiArgument("ContainerRegistryToken"),
+    UserName = CiArgument("ContainerRegistryUserName")
+};
+var sonarArgs = new SonarArgs
+{
+    Org = CiArgument("SonarOrg"),
+    Token = CiArgument("SonarToken"),
+    ProjectKey = CiArgument("SonarProjectKey"),
+    ProjectName = CiArgument("SonarProjectName"),
+    HostUrl = CiArgument("SonarHostUrl", "http://localhost:9000")
+};
 
 // Artifact Folders
 var artifactsFolder = "./artifacts";
 var packagesFolder = System.IO.Path.Combine(artifactsFolder, "packages");
 var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
 var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
-
-BuildManifest buildManifest;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Setup / Teardown
@@ -62,7 +66,7 @@ Setup(context =>
 
 Teardown(context =>
 {
-    
+
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,38 +74,17 @@ Teardown(context =>
 ///////////////////////////////////////////////////////////////////////////////
 Task("__NugetArgsCheck")
 	.Does(() => {
-		if (string.IsNullOrEmpty(nugetPackageSource))
-			throw new ArgumentException("NugetPackageSource is required");
-
-		if (string.IsNullOrEmpty(nugetApiKey))
-			throw new ArgumentException("NugetApiKey is required");
+		nugetArgs.Validate();
 	});
 
 Task("__ContainerArgsCheck")
 	.Does(() => {
-		if (string.IsNullOrEmpty(containerRegistryToken))
-			throw new ArgumentException("ContainerRegistryToken is required");
-			
-		if (string.IsNullOrEmpty(containerRegistryUserName))
-			throw new ArgumentException("ContainerRegistryUserName is required");
-			
-		if (string.IsNullOrEmpty(containerRegistry))
-			throw new ArgumentException("ContainerRegistry is required");
+		containerArgs.Validate();
 	});
 
 Task("__SonarArgsCheck")
 	.Does(() => {
-		if (string.IsNullOrEmpty(sonarOrg))
-			throw new ArgumentException("SonarOrg is required");
-		
-		if (string.IsNullOrEmpty(sonarToken))
-			throw new ArgumentException("SonarToken is required");
-
-		if (string.IsNullOrEmpty(sonarProjectKey))
-			throw new ArgumentException("SonarProjectKey is required");
-			
-		if (string.IsNullOrEmpty(sonarProjectName))
-			throw new ArgumentException("SonarProjectName is required");
+		sonarArgs.Validate();
 	});
 
 Task("__Test")
@@ -119,7 +102,7 @@ Task("__Benchmark")
 
 			var settings = new DotNetRunSettings
 			{
-				Configuration = "Release", 
+				Configuration = "Release",
 				ArgumentCustomization = args => {
 					return args
 						.Append("--artifacts")
@@ -146,11 +129,11 @@ Task("__BeginSonarScan")
 
 			SonarBegin(new SonarBeginSettings
 			{
-				Key = sonarProjectKey,
-				Name = sonarProjectName,
-				Login = sonarToken,
-				Organization = sonarOrg,
-				Url = sonarHostUrl,
+				Key = sonarArgs.ProjectKey,
+				Name = sonarArgs.ProjectName,
+				Login = sonarArgs.Token,
+				Organization = sonarArgs.Org,
+				Url = sonarArgs.HostUrl,
 				VsCoverageReportsPath = reportPaths,
 			});
 
@@ -162,7 +145,7 @@ Task("__EndSonarScan")
 		{
 			SonarEnd(new SonarEndSettings
 			{
-				Login = sonarToken,
+				Login = sonarArgs.Token,
 			});
 			Information("Sonar analysis completed successfully.");
 		});
@@ -216,8 +199,8 @@ Task("__NugetPush")
 			Information($"Pushing {package}...");
 			var pushSettings = new DotNetNuGetPushSettings
 			{
-				Source = nugetPackageSource,
-				ApiKey = nugetApiKey
+				Source = nugetArgs.Source,
+				ApiKey = nugetArgs.ApiKey
 			};
 			DotNetNuGetPush(package, pushSettings);
 		}
@@ -225,16 +208,16 @@ Task("__NugetPush")
 
 Task("__DockerLogin")
 	.Does(() => {
-		
-		Information($"Logging into registry: {containerRegistry}...");
+
+		Information($"Logging into registry: {containerArgs.Registry}...");
 
 		var loginSettings = new DockerRegistryLoginSettings
 		{ 
-			Password = containerRegistryToken, 
-			Username = containerRegistryUserName
+			Password = containerArgs.Token, 
+			Username = containerArgs.UserName
 		};
 
-		DockerLogin(loginSettings, containerRegistry);  
+		DockerLogin(loginSettings, containerArgs.Registry);
 	});
 
 Task("__DockerPack")
@@ -250,8 +233,8 @@ Task("__DockerPack")
 			Information($"Parts: {parts.Length}");
 			Information($"Last Part: {parts.Last()}");
 			var packageName = parts.Last().ToLower();
-			packageName = $"{containerRegistry}/{packageName}".ToLower();	
-			
+			packageName = $"{containerArgs.Registry}/{packageName}".ToLower();
+
 			Information($"Packing: {packageName}...");
 			var settings = new DockerImageBuildSettings
 				{
@@ -275,13 +258,13 @@ Task("__DockerPush")
 			Information($"Parts: {parts.Length}");
 			Information($"Last Part: {parts.Last()}");
 			var packageName = parts.Last().ToLower();
-			packageName = $"{containerRegistry}/{packageName}".ToLower();
+			packageName = $"{containerArgs.Registry}/{packageName}".ToLower();
 
 			var settings = new DockerImagePushSettings
-			{ 
-				AllTags = true 
+			{
+				AllTags = true
 			};
-		
+
 			Information($"Pushing: {packageName}...");
 
 			DockerPush(settings, $"{packageName}");
