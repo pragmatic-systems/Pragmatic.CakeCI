@@ -84,7 +84,7 @@ public static class CiArgumentAliases
                 a.Append("test");
                 a.Append(testProject);
                 a.Append("--");
-                a.AppendQuoted($"--results-directory {scriptDirectory}\\artifacts --report-ctrf --coverage --coverage-output '{projectName}.xml' --coverage-output-format xml");
+                a.AppendQuoted($"--results-directory {scriptDirectory}\\artifacts --report-ctrf --coverage --coverage-output '{projectName}.coverage.xml' --coverage-output-format xml");
             });
 
             using var result = context.ProcessRunner.Start("dotnet", settings);
