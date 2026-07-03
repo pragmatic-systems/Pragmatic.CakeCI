@@ -1,0 +1,6 @@
+{
+  "NugetPackages": [],
+  "DockerPackages": [],
+  "Benchmarks": ["Pragsys.CakeCI.Benchmark/Pragsys.CakeCI.Benchmark.csproj"],
+  "ApiSpecs": {}
+}
