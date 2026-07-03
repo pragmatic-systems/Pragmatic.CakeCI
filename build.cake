@@ -5,7 +5,6 @@
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
 #addin nuget:?package=Pragsys.CakeCI&version=0.19.0-local
 
-#addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.Docker&version=1.3.0
 #addin nuget:?package=Cake.Sonar&version=5.0.0
 
@@ -156,7 +155,14 @@ Task("__VersionInfo")
 		if (string.IsNullOrEmpty(versionNumber))
 		{
 			var version = GitVersion();
-			Information("GitVersion Info: " + SerializeJsonPretty(version));
+			var options = new System.Text.Json.JsonSerializerOptions
+			{
+				WriteIndented = true
+			};
+
+			var json = System.Text.Json.JsonSerializer.Serialize(version, options);
+
+			Information("GitVersion Info: " + json);
 			versionNumber = version.SemVer;
 		}
 
