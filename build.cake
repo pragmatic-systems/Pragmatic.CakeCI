@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
-#addin nuget:?package=Pragsys.CakeCI&version=0.1.0-local
+#addin nuget:?package=Pragsys.CakeCI&version=0.16.0-local
 
 #addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.Docker&version=1.3.0
@@ -22,12 +22,12 @@
 var cakeMixFile = Argument("cakemix", "build.cakemix");
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+var versionNumber = CiArgument("VersionOverride");	
 
 // Nuget Params
 var nugetPackageSource = CiArgument("Source");
 var nugetApiKey = CiArgument("ApiKey");			
-var versionNumber = CiArgument("VersionOverride");	
-	
+
 // Container Params
 var containerRegistry = CiArgument("ContainerRegistry");
 var containerRegistryToken = CiArgument("ContainerRegistryToken");
@@ -102,20 +102,11 @@ Task("__SonarArgsCheck")
 			
 		if (string.IsNullOrEmpty(sonarProjectName))
 			throw new ArgumentException("SonarProjectName is required");
-			
 	});
 
 Task("__Test")
 	.Does(() => {
-
-		// NOTE: New dotnet test model moves the relative path to inside the local app.
-		Information("Testing....");
-		var result = StartProcess("dotnet", "test -- \"--results-directory ..\\..\\artifacts --report-ctrf --coverage --coverage-output-format xml\"");
-        if (result != 0)
-        {
-            throw new Exception("Tests failed");
-        }
-        Information("Tests pass");
+		CiTest();
 	});
 
 Task("__Benchmark")
@@ -143,14 +134,7 @@ Task("__Benchmark")
 Task("__LintCheck")
     .Does(() =>
     {
-        Information("Running lint check with dotnet format...");
-        // Run `dotnet format --verify-no-changes`
-        var result = StartProcess("dotnet", "format --verify-no-changes");
-        if (result != 0)
-        {
-            throw new Exception("Lint check failed: code formatting violations detected. Run `dotnet format`");
-        }
-        Information("Lint check passed – no formatting changes required.");
+		CiLint();
     });
 
 Task("__BeginSonarScan")
