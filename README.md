@@ -9,19 +9,6 @@ Because of that I've opted for Cake which can be run both locally, and via GHA.
 ## Overview
 This build.cake file uses a `.cakemix` configuration file to determine what to pack, test, benchmark etc. It will create an initial version when first run in a project that will make a best guess default setup.
 
-## Cakemix C# Class
-
-```
-public class BuildManifest
-{
-	public string[] NugetPackages { get; set; }
-	public string[] DockerPackages { get; set; }
-	public string[] Tests { get; set; }
-	public string[] Benchmarks { get; set; }
-	public Dictionary<string, string> ApiSpecs { get; set; }
-}
-```
-
 ## Cakemix Sample Schema
 
 ```
@@ -33,9 +20,6 @@ public class BuildManifest
     "./src/Template.DbApi.Api/Dockerfile",
     "./src/Template.DbApi.DbUp/Dockerfile"
   ],
-  "Tests": [
-    "./test/Template.DbApi.UnitTests/Template.DbApi.UnitTests.csproj"
-  ],
   "Benchmarks": [
     "./test/Template.DbApi.Benchmark/Template.DbApi.Benchmark.csproj"
   ],
@@ -44,6 +28,8 @@ public class BuildManifest
   }
 }
 ```
+
+> **Note:** Test projects (`*.Tests.csproj`) are auto-discovered — no need to list them in the manifest.
 
 ## Note
 Use `/` for folder seperators as this works on both Windows and Linux.

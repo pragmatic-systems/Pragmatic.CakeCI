@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
-#addin nuget:?package=Pragsys.CakeCI&version=0.21.0-local
+#addin nuget:?package=Pragsys.CakeCI&version=0.1.0-local
 
 #addin nuget:?package=Cake.Docker&version=1.3.0
 #addin nuget:?package=Cake.Sonar&version=5.0.0
