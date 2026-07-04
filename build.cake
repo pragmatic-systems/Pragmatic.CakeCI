@@ -174,12 +174,12 @@ Task("__BeginSonarScan")
 			{
 				Arguments = new ProcessArgumentBuilder()
 					.Append("begin")
-					.AppendSwitchQuoted("/k", sonarArgs.ProjectKey)
-					.AppendSwitchQuoted("/n", sonarArgs.ProjectName)
-					.AppendSwitchQuoted("/o", sonarArgs.Org)
-					.Append("/d:sonar.login=" + sonarArgs.Token)
-					.Append("/d:sonar.host.url=" + sonarArgs.HostUrl)
-					.Append("/d:sonar.cs.opencover.reportsPaths=" + reportPaths)
+					.Append($"/key:{sonarArgs.ProjectKey}")
+					.Append($"/name:{sonarArgs.ProjectName}")
+					.Append($"/organization:{sonarArgs.Org}")
+					.Append($"/d:sonar.login={sonarArgs.Token}")
+					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
+					.Append($"/d:sonar.cs.opencover.reportsPaths={reportPaths}")
 			};
 
 			StartProcess(scannerPath, beginSettings);
