@@ -201,8 +201,11 @@ Task("__EndSonarScan")
 					.Append("end")
 			};
 
-			StartProcess(scannerPath, endSettings);
-			Information("Sonar analysis completed successfully.");
+			var result = StartProcess(scannerPath, endSettings);
+			if (result == 0)
+				Information("Sonar analysis completed successfully.");
+			else
+				throw new CakeException("Sonar analysis failed");
 		});
 
 Task("__VersionInfo")
