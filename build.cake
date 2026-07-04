@@ -53,9 +53,12 @@ string GetSonarScannerPath()
 	var toolsDir = MakeAbsolute(Directory("tools"));
 	var sonarToolDir = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner", "7.1.1", "tools");
 
+	// Assumes the .cake script resides at the repository root.
+    var scriptDirectory = Context.Environment.WorkingDirectory;
 	
 	Information("Tools Dir: " + toolsDir);
 	Information("Sonar Tool Dir: " + sonarToolDir);
+	Information("Script Dir: " + scriptDirectory);
 
 	if (!System.IO.Directory.Exists(sonarToolDir))
 	{
