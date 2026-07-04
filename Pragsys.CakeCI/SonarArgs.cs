@@ -28,6 +28,11 @@ public class SonarArgs
     public required string ProjectName { get; set; }
 
     /// <summary>
+    /// The branch to register as being applied
+    /// </summary>
+    public required string Branch { get; set; }
+
+    /// <summary>
     /// The Sonar host URL. Defaults to <c>http://localhost:9000</c>.
     /// </summary>
     public required string HostUrl { get; set; }
@@ -43,6 +48,9 @@ public class SonarArgs
 
         if (string.IsNullOrEmpty(Token))
             throw new ArgumentException("SonarToken is required.");
+
+        if (string.IsNullOrEmpty(Branch))
+            throw new ArgumentException("SonarBranch is required.");
 
         if (string.IsNullOrEmpty(ProjectKey))
             throw new ArgumentException("SonarProjectKey is required.");

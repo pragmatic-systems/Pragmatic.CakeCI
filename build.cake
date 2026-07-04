@@ -35,6 +35,7 @@ var sonarArgs = new SonarArgs
     Token = CiArgument("SonarToken"),
     ProjectKey = CiArgument("SonarProjectKey"),
     ProjectName = CiArgument("SonarProjectName"),
+	Branch = CiArgument("SonarBranch"),
     HostUrl = CiArgument("SonarHostUrl", "http://localhost:9000")
 };
 
@@ -189,6 +190,7 @@ Task("__BeginSonarScan")
 					.Append($"/key:{sonarArgs.ProjectKey}")
 					.Append($"/name:{sonarArgs.ProjectName}")
 					.Append($"/organization:{sonarArgs.Org}")
+					.Append($"/branch:{sonarArgs.Branch}")
 					.Append($"/d:sonar.token={sonarArgs.Token}")
 					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
 					.Append($"/d:sonar.cs.opencover.reportsPaths={reportPaths}")
