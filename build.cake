@@ -50,51 +50,56 @@ var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
 string GetSonarScannerPath()
 {
 	var toolsDir = MakeAbsolute(Directory("tools"));
-	var sonarToolDir = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner", "7.1.1", "tools");
-
-	Information("Tools Dir: " + toolsDir);
-	Information("Sonar Tool Dir: " + sonarToolDir);
-
-	if (!System.IO.Directory.Exists(sonarToolDir))
-	{
-		Information("Installing dotnet-sonarscanner tool...");
-		var installSettings = new ProcessSettings
-		{
-			Arguments = new ProcessArgumentBuilder()
-				.Append("tool")
-				.Append("install")
-				.Append("dotnet-sonarscanner")
-				.Append("--version")
-				.Append("7.1.1")
-				.Append("--tool-path")
-				.Append(toolsDir.FullPath)
-				.Append("--add-source")
-				.Append("https://api.nuget.org/v3/index.json")
-				.Append("-v")
-				.Append("quiet")
-			};
-		StartProcess("dotnet", installSettings);
-	}
-
-	Information($"Sonar tool directory: {sonarToolDir}");
 
 	// On Windows the executable is dotnet-sonarscanner.exe
-	var scannerExe = System.IO.Path.Combine(sonarToolDir, "dotnet-sonarscanner.exe");
+	var scannerExe = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner.exe");
 	if (System.IO.File.Exists(scannerExe))
 	{
 		return scannerExe;
 	}
 
 	// On Linux/macOS it's a shell script named dotnet-sonarscanner
-	var scannerScript = System.IO.Path.Combine(sonarToolDir, "dotnet-sonarscanner");
+	var scannerScript = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner");
 	if (System.IO.File.Exists(scannerScript))
 	{
 		return scannerScript;
 	}
 
-	// If we can't find it, list what's actually there for debugging
-	var availableFiles = System.IO.Directory.GetFiles(sonarToolDir).Select(f => System.IO.Path.GetFileName(f)).ToArray();
-	throw new InvalidOperationException($"Sonar scanner executable not found in {sonarToolDir}. Available files: {string.Join(", ", availableFiles)}");
+	// Not installed yet — install it
+	Information("Installing dotnet-sonarscanner tool...");
+	var installSettings = new ProcessSettings
+	{
+		Arguments = new ProcessArgumentBuilder()
+			.Append("tool")
+			.Append("install")
+			.Append("dotnet-sonarscanner")
+			.Append("--version")
+			.Append("7.1.1")
+			.Append("--tool-path")
+			.Append(toolsDir.FullPath)
+			.Append("--add-source")
+			.Append("https://api.nuget.org/v3/index.json")
+			.Append("-v")
+			.Append("quiet")
+	};
+	StartProcess("dotnet", installSettings);
+
+	// Re-check after install
+	scannerExe = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner.exe");
+	if (System.IO.File.Exists(scannerExe))
+	{
+		return scannerExe;
+	}
+
+	scannerScript = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner");
+	if (System.IO.File.Exists(scannerScript))
+	{
+		return scannerScript;
+	}
+
+	// If we still can't find it, list what's actually there for debugging
+	var availableFiles = System.IO.Directory.GetFiles(toolsDir.FullPath).Select(f => System.IO.Path.GetFileName(f)).ToArray();
+	throw new InvalidOperationException($"Sonar scanner executable not found in {toolsDir.FullPath}. Available files: {string.Join(", ", availableFiles)}");
 }
 
 Task("__InstallSonarScanner")
