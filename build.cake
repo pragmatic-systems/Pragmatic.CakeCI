@@ -45,70 +45,7 @@ var packagesFolder = System.IO.Path.Combine(artifactsFolder, "packages");
 var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
 var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
 
-///////////////////////////////////////////////////////////////////////////////
-// Sonar Scanner Helper
-///////////////////////////////////////////////////////////////////////////////
-string GetSonarScannerPath()
-{
-	var toolsDir = MakeAbsolute(Directory("tools"));
 
-	// On Windows the executable is dotnet-sonarscanner.exe
-	var scannerExe = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner.exe");
-	if (System.IO.File.Exists(scannerExe))
-	{
-		return scannerExe;
-	}
-
-	// On Linux/macOS it's a shell script named dotnet-sonarscanner
-	var scannerScript = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner");
-	if (System.IO.File.Exists(scannerScript))
-	{
-		return scannerScript;
-	}
-
-	// Not installed yet — install it
-	Information("Installing dotnet-sonarscanner tool...");
-	var installSettings = new ProcessSettings
-	{
-		Arguments = new ProcessArgumentBuilder()
-			.Append("tool")
-			.Append("install")
-			.Append("dotnet-sonarscanner")
-			.Append("--version")
-			.Append("7.1.1")
-			.Append("--tool-path")
-			.Append(toolsDir.FullPath)
-			.Append("--add-source")
-			.Append("https://api.nuget.org/v3/index.json")
-			.Append("-v")
-			.Append("quiet")
-	};
-	StartProcess("dotnet", installSettings);
-
-	// Re-check after install
-	scannerExe = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner.exe");
-	if (System.IO.File.Exists(scannerExe))
-	{
-		return scannerExe;
-	}
-
-	scannerScript = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner");
-	if (System.IO.File.Exists(scannerScript))
-	{
-		return scannerScript;
-	}
-
-	// If we still can't find it, list what's actually there for debugging
-	var availableFiles = System.IO.Directory.GetFiles(toolsDir.FullPath).Select(f => System.IO.Path.GetFileName(f)).ToArray();
-	throw new InvalidOperationException($"Sonar scanner executable not found in {toolsDir.FullPath}. Available files: {string.Join(", ", availableFiles)}");
-}
-
-Task("__InstallSonarScanner")
-	.Does(() =>
-	{
-		// Triggers installation of dotnet-sonarscanner if not already present
-		_ = GetSonarScannerPath();
-	});
 
 // Setup / Teardown
 ///////////////////////////////////////////////////////////////////////////////
@@ -161,61 +98,15 @@ Task("__LintCheck")
     });
 
 Task("__BeginSonarScan")
-		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
-			var reports = System.IO.Directory.GetFiles(
-                "./",
-                "*Tests.csproj",
-                System.IO.SearchOption.AllDirectories)
-                .Select(s => System.IO.Path.GetFileNameWithoutExtension(s) + ".coverage.xml")
-				.Select(s => System.IO.Path.Combine(artifactsFolder, s));
-
-			var reportPaths = string.Join(",", reports);
-				
-			Information($"ReportPaths: {reportPaths}");
-
-			var scannerPath = GetSonarScannerPath();
-			Information($"Using Sonar scanner: {scannerPath}");
-
-			var beginSettings = new ProcessSettings
-			{
-				Arguments = new ProcessArgumentBuilder()
-					.Append("begin")
-					.Append($"/key:{sonarArgs.ProjectKey}")
-					.Append($"/name:{sonarArgs.ProjectName}")
-					.Append($"/organization:{sonarArgs.Org}")
-					.Append($"/d:sonar.token={sonarArgs.Token}")
-					.Append($"/d:sonar.branch.name={sonarArgs.Branch}")
-					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
-					.Append($"/d:sonar.cs.vscoveragexml.reportsPaths={reportPaths}")
-					.Append("/d:sonar.verbose=true")
-			};
-
-			StartProcess(scannerPath, beginSettings);
-
-			var solutionFiles = GetFiles("./**/*.sln") + GetFiles("./**/*.slnx");
-			DotNetBuild(solutionFiles.SingleOrDefault().ToString());
+			CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		});
 
 Task("__EndSonarScan")
-		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
-			var scannerPath = GetSonarScannerPath();
-
-			var endSettings = new ProcessSettings
-			{
-				Arguments = new ProcessArgumentBuilder()
-					.Append("end")
-					.Append($"/d:sonar.token={sonarArgs.Token}")
-			};
-
-			var result = StartProcess(scannerPath, endSettings);
-			if (result == 0)
-				Information("Sonar analysis completed successfully.");
-			else
-				throw new CakeException("Sonar analysis failed");
+			CiSonarScannerEnd(sonarArgs);
 		});
 
 Task("__VersionInfo")
