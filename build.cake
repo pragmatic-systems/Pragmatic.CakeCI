@@ -198,7 +198,11 @@ Task("__EndSonarScan")
 			{
 				Arguments = new ProcessArgumentBuilder()
 					.Append("end")
+					.Append($"/key:{sonarArgs.ProjectKey}")
+					.Append($"/name:{sonarArgs.ProjectName}")
+					.Append($"/organization:{sonarArgs.Org}")
 					.Append("/d:sonar.login=" + sonarArgs.Token)
+					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
 			};
 
 			StartProcess(scannerPath, endSettings);
