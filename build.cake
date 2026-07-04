@@ -45,7 +45,6 @@ var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
 var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
 
 ///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 // Sonar Scanner Helper
 ///////////////////////////////////////////////////////////////////////////////
 string GetSonarScannerPath()
@@ -53,12 +52,8 @@ string GetSonarScannerPath()
 	var toolsDir = MakeAbsolute(Directory("tools"));
 	var sonarToolDir = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner", "7.1.1", "tools");
 
-	// Assumes the .cake script resides at the repository root.
-    var scriptDirectory = Context.Environment.WorkingDirectory;
-	
 	Information("Tools Dir: " + toolsDir);
 	Information("Sonar Tool Dir: " + sonarToolDir);
-	Information("Script Dir: " + scriptDirectory);
 
 	if (!System.IO.Directory.Exists(sonarToolDir))
 	{
@@ -81,7 +76,25 @@ string GetSonarScannerPath()
 		StartProcess("dotnet", installSettings);
 	}
 
-	return "dotnet sonarscanner";
+	Information($"Sonar tool directory: {sonarToolDir}");
+
+	// On Windows the executable is dotnet-sonarscanner.exe
+	var scannerExe = System.IO.Path.Combine(sonarToolDir, "dotnet-sonarscanner.exe");
+	if (System.IO.File.Exists(scannerExe))
+	{
+		return scannerExe;
+	}
+
+	// On Linux/macOS it's a shell script named dotnet-sonarscanner
+	var scannerScript = System.IO.Path.Combine(sonarToolDir, "dotnet-sonarscanner");
+	if (System.IO.File.Exists(scannerScript))
+	{
+		return scannerScript;
+	}
+
+	// If we can't find it, list what's actually there for debugging
+	var availableFiles = System.IO.Directory.GetFiles(sonarToolDir).Select(f => System.IO.Path.GetFileName(f)).ToArray();
+	throw new InvalidOperationException($"Sonar scanner executable not found in {sonarToolDir}. Available files: {string.Join(", ", availableFiles)}");
 }
 
 Task("__InstallSonarScanner")
