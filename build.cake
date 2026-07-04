@@ -45,6 +45,52 @@ var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
 var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
 
 ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// Sonar Scanner Helper
+///////////////////////////////////////////////////////////////////////////////
+string GetSonarScannerPath()
+{
+	var toolsDir = MakeAbsolute(Directory("tools"));
+	var sonarToolDir = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner", "7.1.1", "tools");
+
+	// Assumes the .cake script resides at the repository root.
+    var scriptDirectory = Context.Environment.WorkingDirectory;
+	
+	Information("Tools Dir: " + toolsDir);
+	Information("Sonar Tool Dir: " + sonarToolDir);
+	Information("Script Dir: " + scriptDirectory);
+
+	if (!System.IO.Directory.Exists(sonarToolDir))
+	{
+		Information("Installing dotnet-sonarscanner tool...");
+		var installSettings = new ProcessSettings
+		{
+			Arguments = new ProcessArgumentBuilder()
+				.Append("tool")
+				.Append("install")
+				.Append("dotnet-sonarscanner")
+				.Append("--version")
+				.Append("7.1.1")
+				.Append("--tool-path")
+				.Append(toolsDir.FullPath)
+				.Append("--add-source")
+				.Append("https://api.nuget.org/v3/index.json")
+				.Append("-v")
+				.Append("quiet")
+			};
+		StartProcess("dotnet", installSettings);
+	}
+
+	return "dotnet sonarscanner";
+}
+
+Task("__InstallSonarScanner")
+	.Does(() =>
+	{
+		// Triggers installation of dotnet-sonarscanner if not already present
+		_ = GetSonarScannerPath();
+	});
+
 // Setup / Teardown
 ///////////////////////////////////////////////////////////////////////////////
 Setup(context =>
@@ -96,13 +142,14 @@ Task("__LintCheck")
     });
 
 Task("__BeginSonarScan")
+		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
 			var reportFiles = System.IO.Directory.GetFiles(artifactsFolder, "*.xml", SearchOption.AllDirectories)
 					.Select(p => p.Replace("\\", "/")).ToArray();
 			var reportPaths = reportFiles.Length > 0 ? string.Join(",", reportFiles) : string.Empty;
 
-			var scannerPath = "dotnet-sonarscanner";
+			var scannerPath = GetSonarScannerPath();
 			Information($"Using Sonar scanner: {scannerPath}");
 
 			var beginSettings = new ProcessSettings
@@ -123,9 +170,10 @@ Task("__BeginSonarScan")
 		});
 
 Task("__EndSonarScan")
+		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
-			var scannerPath = "dotnet-sonarscanner";
+			var scannerPath = GetSonarScannerPath();
 
 			var endSettings = new ProcessSettings
 			{
