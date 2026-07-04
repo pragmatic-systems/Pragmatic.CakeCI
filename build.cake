@@ -184,7 +184,8 @@ Task("__BeginSonarScan")
 
 			StartProcess(scannerPath, beginSettings);
 
-			DotNetBuild("*.sln");
+			var solutionFiles = GetFiles("./**/*.sln") + GetFiles("./**/*.slnx");
+			DotNetBuild(solutionFiles.SingleOrDefault().ToString());
 		});
 
 Task("__EndSonarScan")
