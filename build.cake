@@ -6,7 +6,6 @@
 #addin nuget:?package=Pragsys.CakeCI&version=0.1.0-local
 
 #addin nuget:?package=Cake.Docker&version=1.3.0
-#tool nuget:?package=dotnet-sonarscanner&version=7.1.1
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -46,6 +45,49 @@ var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
 var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
 
 ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// Sonar Scanner Helper
+///////////////////////////////////////////////////////////////////////////////
+string GetSonarScannerPath()
+{
+	var toolsDir = MakeAbsolute(Directory("tools"));
+	var sonarToolDir = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner", "7.1.1", "tools");
+	if (!System.IO.Directory.Exists(sonarToolDir))
+	{
+		Information("Installing dotnet-sonarscanner tool...");
+		var installSettings = new ProcessSettings
+		{
+			Arguments = new ProcessArgumentBuilder()
+				.Append("tool")
+				.Append("install")
+				.Append("dotnet-sonarscanner")
+				.Append("--version")
+				.Append("7.1.1")
+				.Append("--tool-path")
+				.Append(toolsDir.FullPath)
+				.Append("--add-source")
+				.Append("https://api.nuget.org/v3/index.json")
+				.Append("-v")
+				.Append("quiet")
+			};
+		StartProcess("dotnet", installSettings);
+	}
+
+	var scannerExe = System.IO.Path.Combine(sonarToolDir, "dotnet-sonarscanner.exe");
+	if (!System.IO.File.Exists(scannerExe))
+	{
+		scannerExe = System.IO.Path.Combine(sonarToolDir, "dotnet-sonarscanner");
+	}
+	return scannerExe;
+}
+
+Task("__InstallSonarScanner")
+	.Does(() =>
+	{
+		// Triggers installation of dotnet-sonarscanner if not already present
+		_ = GetSonarScannerPath();
+	});
+
 // Setup / Teardown
 ///////////////////////////////////////////////////////////////////////////////
 Setup(context =>
@@ -97,39 +139,15 @@ Task("__LintCheck")
     });
 
 Task("__BeginSonarScan")
+		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
 			var reportFiles = System.IO.Directory.GetFiles(artifactsFolder, "*.xml", SearchOption.AllDirectories)
 					.Select(p => p.Replace("\\", "/")).ToArray();
 			var reportPaths = reportFiles.Length > 0 ? string.Join(",", reportFiles) : string.Empty;
 
-			var toolPath = Context.Tools.Resolve("dotnet-sonarscanner");
-			if (toolPath == null)
-			{
-				throw new InvalidOperationException("dotnet-sonarscanner tool could not be resolved. Ensure the #tool directive is present.");
-			}
-
-			var toolDir = toolPath.GetDirectory().FullPath;
-			Information($"Sonar scanner tool directory: {toolDir}");
-
-			var scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner.exe")
-				.Select(p => new System.IO.FileInfo(p))
-				.FirstOrDefault();
-
-			if (scanner == null)
-			{
-				scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner")
-					.Select(p => new System.IO.FileInfo(p))
-					.FirstOrDefault();
-			}
-
-			if (scanner == null)
-			{
-				var availableFiles = System.IO.Directory.GetFiles(toolDir).Select(f => System.IO.Path.GetFileName(f)).ToArray();
-				throw new InvalidOperationException($"Sonar scanner executable not found in {toolDir}. Available files: {string.Join(", ", availableFiles)}");
-			}
-
-			Information($"Using Sonar scanner: {scanner.FullName}");
+			var scannerPath = GetSonarScannerPath();
+			Information($"Using Sonar scanner: {scannerPath}");
 
 			var beginSettings = new ProcessSettings
 			{
@@ -143,36 +161,16 @@ Task("__BeginSonarScan")
 					.Append("/d:sonar.cs.opencover.reportsPaths=" + reportPaths)
 			};
 
-			StartProcess(scanner.FullName, beginSettings);
+			StartProcess(scannerPath, beginSettings);
 
 			DotNetBuild("*.sln");
 		});
 
 Task("__EndSonarScan")
+		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
-			var toolPath = Context.Tools.Resolve("dotnet-sonarscanner");
-			if (toolPath == null)
-			{
-				throw new InvalidOperationException("dotnet-sonarscanner tool could not be resolved. Ensure the #tool directive is present.");
-			}
-
-			var toolDir = toolPath.GetDirectory().FullPath;
-			var scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner.exe")
-				.Select(p => new System.IO.FileInfo(p))
-				.FirstOrDefault();
-
-			if (scanner == null)
-			{
-				scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner")
-					.Select(p => new System.IO.FileInfo(p))
-					.FirstOrDefault();
-			}
-
-			if (scanner == null)
-			{
-				throw new InvalidOperationException($"Sonar scanner executable not found in {toolDir}");
-			}
+			var scannerPath = GetSonarScannerPath();
 
 			var endSettings = new ProcessSettings
 			{
@@ -181,7 +179,7 @@ Task("__EndSonarScan")
 					.Append("/d:sonar.login=" + sonarArgs.Token)
 			};
 
-			StartProcess(scanner.FullName, endSettings);
+			StartProcess(scannerPath, endSettings);
 			Information("Sonar analysis completed successfully.");
 		});
 
