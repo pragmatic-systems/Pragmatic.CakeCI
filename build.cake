@@ -188,7 +188,7 @@ Task("__BeginSonarScan")
 					.Append($"/d:sonar.token={sonarArgs.Token}")
 					.Append($"/d:sonar.branch.name={sonarArgs.Branch}")
 					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
-					.Append($"/d:sonar.cs.opencover.reportsPaths={reportPaths}")
+					.Append($"/d:sonar.cs.vscoveragexml.reportsPaths={reportPaths}")
 					.Append("/d:sonar.verbose=true")
 			};
 
