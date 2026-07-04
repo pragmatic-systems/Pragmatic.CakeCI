@@ -186,6 +186,7 @@ public static class SonarScanAliases
             Arguments = new ProcessArgumentBuilder()
                 .Append("end")
                 .Append($"/d:sonar.token={sonarArgs.Token}")
+                .Append("/d:sonar.qualitygate.wait=true")
         };
 
         using var endResult = context.ProcessRunner.Start(scannerPath, endSettings);
