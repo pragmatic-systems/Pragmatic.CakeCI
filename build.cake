@@ -99,21 +99,37 @@ Task("__LintCheck")
 Task("__BeginSonarScan")
 		.Does(() =>
 		{
-			var reportPaths = System.IO.Directory.GetFiles(artifactsFolder, "*.xml", SearchOption.AllDirectories)
-					.Select(p => p.Replace('\\', '/'))
-					.Aggregate((a, b) => a + "," + b);
+			var reportFiles = System.IO.Directory.GetFiles(artifactsFolder, "*.xml", SearchOption.AllDirectories)
+					.Select(p => p.Replace("\\", "/")).ToArray();
+			var reportPaths = reportFiles.Length > 0 ? string.Join(",", reportFiles) : string.Empty;
 
-			var toolDir = Context.Tools.Resolve("dotnet-sonarscanner").GetDirectory();
-			var scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner.exe")
+			var toolPath = Context.Tools.Resolve("dotnet-sonarscanner");
+			if (toolPath == null)
+			{
+				throw new InvalidOperationException("dotnet-sonarscanner tool could not be resolved. Ensure the #tool directive is present.");
+			}
+
+			var toolDir = toolPath.GetDirectory().FullPath;
+			Information($"Sonar scanner tool directory: {toolDir}");
+
+			var scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner.exe")
 				.Select(p => new System.IO.FileInfo(p))
 				.FirstOrDefault();
 
 			if (scanner == null)
 			{
-				scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner")
+				scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner")
 					.Select(p => new System.IO.FileInfo(p))
 					.FirstOrDefault();
 			}
+
+			if (scanner == null)
+			{
+				var availableFiles = System.IO.Directory.GetFiles(toolDir).Select(f => System.IO.Path.GetFileName(f)).ToArray();
+				throw new InvalidOperationException($"Sonar scanner executable not found in {toolDir}. Available files: {string.Join(", ", availableFiles)}");
+			}
+
+			Information($"Using Sonar scanner: {scanner.FullName}");
 
 			var beginSettings = new ProcessSettings
 			{
@@ -135,16 +151,27 @@ Task("__BeginSonarScan")
 Task("__EndSonarScan")
 		.Does(() =>
 		{
-			var toolDir = Context.Tools.Resolve("dotnet-sonarscanner").GetDirectory();
-			var scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner.exe")
+			var toolPath = Context.Tools.Resolve("dotnet-sonarscanner");
+			if (toolPath == null)
+			{
+				throw new InvalidOperationException("dotnet-sonarscanner tool could not be resolved. Ensure the #tool directive is present.");
+			}
+
+			var toolDir = toolPath.GetDirectory().FullPath;
+			var scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner.exe")
 				.Select(p => new System.IO.FileInfo(p))
 				.FirstOrDefault();
 
 			if (scanner == null)
 			{
-				scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner")
+				scanner = System.IO.Directory.GetFiles(toolDir, "dotnet-sonarscanner")
 					.Select(p => new System.IO.FileInfo(p))
 					.FirstOrDefault();
+			}
+
+			if (scanner == null)
+			{
+				throw new InvalidOperationException($"Sonar scanner executable not found in {toolDir}");
 			}
 
 			var endSettings = new ProcessSettings
