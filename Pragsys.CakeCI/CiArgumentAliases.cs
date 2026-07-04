@@ -79,13 +79,15 @@ public static class CiArgumentAliases
             // NOTE: New dotnet test model moves the relative path to inside the local app.
             context.Log.Information($"Testing - {projectName}");
 
+            var artifactsPath = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
+
             var settings = new ProcessSettings();
             settings.WithArguments(a =>
             {
                 a.Append("test");
                 a.Append(testProject);
                 a.Append("--");
-                a.AppendQuoted($"--results-directory {scriptDirectory}\\artifacts --report-ctrf --coverage --coverage-output '{projectName}.coverage.xml' --coverage-output-format xml");
+                a.AppendQuoted($"--results-directory {artifactsPath} --report-ctrf --coverage --coverage-output '{projectName}.coverage.xml' --coverage-output-format xml");
             });
 
             using var result = context.ProcessRunner.Start("dotnet", settings);
