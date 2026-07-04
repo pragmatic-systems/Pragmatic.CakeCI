@@ -168,8 +168,7 @@ Task("__BeginSonarScan")
                 "./",
                 "*Tests.csproj",
                 System.IO.SearchOption.AllDirectories)
-                .Select(s => System.IO.Path.GetFileNameWithoutExtension(s))
-                .Select(s => s.Replace(".csproj", ".coverage.xml"))
+                .Select(s => System.IO.Path.GetFileNameWithoutExtension(s) + ".coverage.xml")
 				.Select(s => System.IO.Path.Combine(artifactsFolder, s));
 
 			var reportPs = string.Join(",", reports);
