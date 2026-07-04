@@ -52,6 +52,11 @@ string GetSonarScannerPath()
 {
 	var toolsDir = MakeAbsolute(Directory("tools"));
 	var sonarToolDir = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner", "7.1.1", "tools");
+
+	
+	Information("Tools Dir: " + toolsDir);
+	Information("Sonar Tool Dir: " + sonarToolDir);
+
 	if (!System.IO.Directory.Exists(sonarToolDir))
 	{
 		Information("Installing dotnet-sonarscanner tool...");
