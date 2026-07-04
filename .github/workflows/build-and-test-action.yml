@@ -33,6 +33,10 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
 
+      - name: Make local-packages folder
+        shell: bash
+        run: mkdir ./local-packages
+
         # Self publish our own cake tools to a local package feed so our build process will dog-food
       - name: Pack Pragsys.CakeCI to local-packages
         shell: bash
