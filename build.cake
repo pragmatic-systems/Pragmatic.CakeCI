@@ -17,9 +17,9 @@
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-var cakeMixFile = Argument("cakemix", "build.cakemix");
-var target = Argument("target", "Default");
-var configuration = Argument("configuration", "Release");
+var cakeMixFile = CiArgument("cakemix", "build.cakemix");
+var target = CiArgument("target", "Default");
+var configuration = CiArgument("configuration", "Release");
 var versionNumber = CiArgument("VersionOverride");
 
 BuildManifest buildManifest;
@@ -175,6 +175,7 @@ Task("__NugetPush")
 				Source = nugetArgs.Source,
 				ApiKey = nugetArgs.ApiKey
 			};
+
 			DotNetNuGetPush(package, pushSettings);
 		}
 	});
@@ -250,7 +251,7 @@ Task("BuildAndTest")
 Task("BuildAndBenchmark")
 	.IsDependentOn("__Benchmark");
 
-Task("SonarScan")
+Task("BuildAndSonarScan")
 	.IsDependentOn("__SonarArgsCheck")
 	.IsDependentOn("__Test")
 	.IsDependentOn("__Benchmark")
