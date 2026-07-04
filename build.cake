@@ -200,8 +200,6 @@ Task("__EndSonarScan")
 				Arguments = new ProcessArgumentBuilder()
 					.Append("end")
 					.Append("/d:sonar.login=" + sonarArgs.Token)
-					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
-					.Append("/d:sonar.verbose=true")
 			};
 
 			StartProcess(scannerPath, endSettings);
