@@ -163,7 +163,19 @@ Task("__BeginSonarScan")
 		.IsDependentOn("__InstallSonarScanner")
 		.Does(() =>
 		{
-			var reportFiles = System.IO.Directory.GetFiles(artifactsFolder, "*.xml", SearchOption.AllDirectories)
+			var reports = System.IO.Directory.GetFiles(
+                "./",
+                "*Tests.csproj",
+                System.IO.SearchOption.AllDirectories)
+                .Select(s => System.IO.Path.GetFileNameWithoutExtension(s))
+                .Select(s => s.Replace(".csproj", ".coverage.xml"))
+				.Select(s => System.IO.Path.Combine(artifactsFolder, s));
+
+			var reportPs = string.Join(",", reports);
+				
+			Information($"V2ReportPaths: {reportPs}");
+
+			var reportFiles = System.IO.Directory.GetFiles(artifactsFolder, "*.coverage.xml", SearchOption.AllDirectories)
 					.Select(p => p.Replace("\\", "/")).ToArray();
 			var reportPaths = reportFiles.Length > 0 ? string.Join(",", reportFiles) : string.Empty;
 
