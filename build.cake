@@ -173,11 +173,13 @@ Task("__BeginSonarScan")
 
 			var reportPs = string.Join(",", reports);
 				
-			Information($"V2ReportPaths: {reportPs}");
 
 			var reportFiles = System.IO.Directory.GetFiles(artifactsFolder, "*.coverage.xml", SearchOption.AllDirectories)
 					.Select(p => p.Replace("\\", "/")).ToArray();
 			var reportPaths = reportFiles.Length > 0 ? string.Join(",", reportFiles) : string.Empty;
+			
+			Information($"ReportPaths: {reportPaths}");
+			Information($"V2ReportPaths: {reportPs}");
 
 			var scannerPath = GetSonarScannerPath();
 			Information($"Using Sonar scanner: {scannerPath}");
