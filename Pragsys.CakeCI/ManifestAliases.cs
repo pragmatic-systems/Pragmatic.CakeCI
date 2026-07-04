@@ -37,7 +37,7 @@ public static class ManifestAliases
             return manifest;
         }
 
-        using var fs = File.OpenRead(file);
+        using var fs = File.OpenRead(file); 
         return JsonSerializer.Deserialize<BuildManifest>(fs, JsonOptions)
             ?? throw new InvalidOperationException($"Failed to deserialize build manifest from '{file}'.");
     }
