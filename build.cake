@@ -177,7 +177,7 @@ Task("__BeginSonarScan")
 					.Append($"/key:{sonarArgs.ProjectKey}")
 					.Append($"/name:{sonarArgs.ProjectName}")
 					.Append($"/organization:{sonarArgs.Org}")
-					.Append($"/d:sonar.login={sonarArgs.Token}")
+					.Append($"/d:sonar.token={sonarArgs.Token}")
 					.Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
 					.Append($"/d:sonar.cs.opencover.reportsPaths={reportPaths}")
 					.Append("/d:sonar.verbose=true")
@@ -199,7 +199,7 @@ Task("__EndSonarScan")
 			{
 				Arguments = new ProcessArgumentBuilder()
 					.Append("end")
-					.Append($"/d:sonar.login={sonarArgs.Token}")
+					.Append($"/d:sonar.token={sonarArgs.Token}")
 			};
 
 			var result = StartProcess(scannerPath, endSettings);
