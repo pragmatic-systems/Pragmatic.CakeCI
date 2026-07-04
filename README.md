@@ -41,6 +41,24 @@ Use `/` for folder seperators as this works on both Windows and Linux.
 * `DockerPackAndPush` - Package and push apps as docker images.
 * `FullPackAndPush` - Package and Push nuget and docker images.
 
+## Dogfood Build
+This project dogfoods its own `Pragsys.CakeCI` package. Before running the build script, prepare the local environment by rebuilding and repacking the project:
+
+```bash
+pwsh -ExecutionPolicy Bypass -File scripts/prepare-dogfood.ps1
+```
+
+This script:
+1. Clears the `tools/Addins` folder (removes cached addins)
+2. Clears and re-creates the `local-packages` folder
+3. Builds and packs `Pragsys.CakeCI` with version `0.1.0-dogfood` into `local-packages`
+
+Once prepared, run the build as usual:
+
+```bash
+dotnet cake build.cake
+```
+
 ## Tools
 * Cake Build - https://cakebuild.net/
 * GitVersion - https://gitversion.net/
