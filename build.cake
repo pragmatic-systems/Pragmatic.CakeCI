@@ -1,4 +1,4 @@
-﻿﻿///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // ADDINS
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -6,12 +6,7 @@
 #addin nuget:?package=Pragsys.CakeCI&version=0.1.0-local
 
 #addin nuget:?package=Cake.Docker&version=1.3.0
-#addin nuget:?package=Cake.Sonar&version=5.0.0
-
-///////////////////////////////////////////////////////////////////////////////
-// TOOLS
-///////////////////////////////////////////////////////////////////////////////
-#tool nuget:?package=MSBuild.SonarQube.Runner.Tool&version=4.8.0
+#tool nuget:?package=dotnet-sonarscanner&version=7.1.1
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -108,15 +103,31 @@ Task("__BeginSonarScan")
 					.Select(p => p.Replace('\\', '/'))
 					.Aggregate((a, b) => a + "," + b);
 
-			SonarBegin(new SonarBeginSettings
+			var toolDir = Context.Tools.Resolve("dotnet-sonarscanner").GetDirectory();
+			var scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner.exe")
+				.Select(p => new System.IO.FileInfo(p))
+				.FirstOrDefault();
+
+			if (scanner == null)
 			{
-				Key = sonarArgs.ProjectKey,
-				Name = sonarArgs.ProjectName,
-				Login = sonarArgs.Token,
-				Organization = sonarArgs.Org,
-				Url = sonarArgs.HostUrl,
-				VsCoverageReportsPath = reportPaths,
-			});
+				scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner")
+					.Select(p => new System.IO.FileInfo(p))
+					.FirstOrDefault();
+			}
+
+			var beginSettings = new ProcessSettings
+			{
+				Arguments = new ProcessArgumentBuilder()
+					.Append("begin")
+					.AppendSwitchQuoted("/k", sonarArgs.ProjectKey)
+					.AppendSwitchQuoted("/n", sonarArgs.ProjectName)
+					.AppendSwitchQuoted("/o", sonarArgs.Org)
+					.Append("/d:sonar.login=" + sonarArgs.Token)
+					.Append("/d:sonar.host.url=" + sonarArgs.HostUrl)
+					.Append("/d:sonar.cs.opencover.reportsPaths=" + reportPaths)
+			};
+
+			StartProcess(scanner.FullName, beginSettings);
 
 			DotNetBuild("*.sln");
 		});
@@ -124,10 +135,26 @@ Task("__BeginSonarScan")
 Task("__EndSonarScan")
 		.Does(() =>
 		{
-			SonarEnd(new SonarEndSettings
+			var toolDir = Context.Tools.Resolve("dotnet-sonarscanner").GetDirectory();
+			var scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner.exe")
+				.Select(p => new System.IO.FileInfo(p))
+				.FirstOrDefault();
+
+			if (scanner == null)
 			{
-				Login = sonarArgs.Token,
-			});
+				scanner = System.IO.Directory.GetFiles(toolDir.FullPath, "dotnet-sonarscanner")
+					.Select(p => new System.IO.FileInfo(p))
+					.FirstOrDefault();
+			}
+
+			var endSettings = new ProcessSettings
+			{
+				Arguments = new ProcessArgumentBuilder()
+					.Append("end")
+					.Append("/d:sonar.login=" + sonarArgs.Token)
+			};
+
+			StartProcess(scanner.FullName, endSettings);
 			Information("Sonar analysis completed successfully.");
 		});
 
