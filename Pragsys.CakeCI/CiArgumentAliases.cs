@@ -38,21 +38,7 @@ public static class CiArgumentAliases
     [CakeAliasCategory("Arguments")]
     public static string CiArgument(this ICakeContext context, string argumentName, string defaultValue)
     {
-        string? result = null;
-
-        // Normal CMD Argument First
-        result = context.Arguments.GetArgument(argumentName);
-        if (!string.IsNullOrEmpty(result))
-            return result;
-
-        // Then Check Environment Variable
-        result = context.Environment.GetEnvironmentVariable(argumentName);
-        if (!string.IsNullOrEmpty(result))
-            return result;
-
-        // Then Check Capitalized Github environment variable. INPUT_{MYVAR}
-        var formattedArg = $"INPUT_{argumentName}".ToUpperInvariant();
-        result = context.Environment.GetEnvironmentVariable(formattedArg);
+        var result = context.CiArgument(argumentName);
         if (!string.IsNullOrEmpty(result))
             return result;
 
