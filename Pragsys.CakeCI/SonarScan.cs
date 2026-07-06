@@ -18,55 +18,9 @@ public static class SonarScanAliases
     /// <param name="context">The Cake context.</param>
     /// <param name="toolsDir">Optional tools directory. Defaults to <c>./tools</c> relative to the working directory.</param>
     /// <returns>A tuple of (command, arguments) to invoke the sonarscanner.</returns>
-    private static (string Command, string Arguments) ResolveSonarScannerPath(ICakeContext context, DirectoryPath? toolsDir = null)
+    private static string ResolveSonarScannerPath(ICakeContext context, DirectoryPath? toolsDir = null)
     {
-        if (toolsDir == null)
-        {
-            var workingDir = context.Environment.WorkingDirectory;
-            toolsDir = workingDir.Combine("tools");
-        }
-
-        // Check for the shim executable created by `dotnet tool install`
-        // On Windows the executable is dotnet-sonarscanner.exe
-        var scannerExe = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner.exe");
-        if (System.IO.File.Exists(scannerExe))
-        {
-            return (scannerExe, string.Empty);
-        }
-
-        // On Linux/macOS it's a shell script named dotnet-sonarscanner
-        var scannerScript = System.IO.Path.Combine(toolsDir.FullPath, "dotnet-sonarscanner");
-        if (System.IO.File.Exists(scannerScript))
-        {
-            return (scannerScript, string.Empty);
-        }
-
-        // Check for a pre-installed package directory (e.g. dotnet-sonarscanner.7.1.1)
-        var packageDirs = System.IO.Directory.GetDirectories(toolsDir.FullPath, "dotnet-sonarscanner.*")
-            .OrderByDescending(d => d)
-            .ToArray();
-
-        if (packageDirs.Length > 0)
-        {
-            var packageDir = packageDirs[0];
-            // Look for the entry point DLL: tools/netcoreapp3.1/any/SonarScanner.MSBuild.dll
-            var dllPath = System.IO.Path.Combine(packageDir, "tools", "netcoreapp3.1", "any", "SonarScanner.MSBuild.dll");
-            if (System.IO.File.Exists(dllPath))
-            {
-                context.Log.Information($"Using pre-installed Sonar scanner from {packageDir}");
-                return ("dotnet", dllPath);
-            }
-        }
-
-        // If we still can't find it, list what's actually there for debugging
-        var availableFiles = System.IO.Directory.GetFiles(toolsDir.FullPath)
-            .Select(f => System.IO.Path.GetFileName(f))
-            .ToArray();
-        var availableDirs = System.IO.Directory.GetDirectories(toolsDir.FullPath)
-            .Select(d => System.IO.Path.GetFileName(d))
-            .ToArray();
-        throw new CakeException(
-            $"Sonar scanner not found in {toolsDir.FullPath}. Available files: {string.Join(", ", availableFiles)}, directories: {string.Join(", ", availableDirs)}");
+        return "dotnet-sonarscanner.exe";
     }
 
     /// <summary>
@@ -97,12 +51,11 @@ public static class SonarScanAliases
         context.Log.Information($"Sonar coverage report paths: {reportPaths}");
 
         // Resolve scanner path
-        var (scannerCommand, scannerArguments) = ResolveSonarScannerPath(context, toolsDir);
+        var scannerCommand = ResolveSonarScannerPath(context, toolsDir);
         context.Log.Information($"Using Sonar scanner: {scannerCommand}");
 
         // Run dotnet-sonarscanner begin
         var beginArgs = new ProcessArgumentBuilder()
-            .Append(scannerArguments)
             .Append("begin")
             .Append($"/key:{sonarArgs.ProjectKey}")
             .Append($"/name:{sonarArgs.ProjectName}")
@@ -165,10 +118,9 @@ public static class SonarScanAliases
     [CakeAliasCategory("Sonar")]
     public static void CiSonarScannerEnd(this ICakeContext context, SonarArgs sonarArgs, DirectoryPath? toolsDir = null)
     {
-        var (scannerCommand, scannerArguments) = ResolveSonarScannerPath(context, toolsDir);
+        var scannerCommand = ResolveSonarScannerPath(context, toolsDir);
 
         var endArgs = new ProcessArgumentBuilder()
-            .Append(scannerArguments)
             .Append("end")
             .Append($"/d:sonar.token={sonarArgs.Token}");
         var endSettings = new ProcessSettings

@@ -118,6 +118,7 @@ Task("__VersionInfo")
 	});
 
 Task("__NugetPack")
+	.IsDependentOn("__VersionInfo")
 	.Does(() => {
 		CiNugetPack(buildManifest, packagesFolder, versionNumber);
 	});
