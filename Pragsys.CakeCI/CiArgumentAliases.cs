@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.Diagnostics;
@@ -136,26 +135,18 @@ public static class CiArgumentAliases
 
         context.Log.Information("Resolving version from GitVersion...");
 
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            Arguments = "gitversion",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-        };
+        var settings = new ProcessSettings();
+        settings.RedirectStandardOutput = true;
+        settings.WithArguments(a => a.Append("gitversion"));
 
-        using var process = Process.Start(startInfo);
-        if (process is null)
-        {
-            throw new CakeException("Failed to start GitVersion process.");
-        }
+        using var result = context.ProcessRunner.Start("dotnet", settings);
+        result.WaitForExit();
 
-        var output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
+        var output = string.Join("\n", result.GetStandardOutput());
 
-        if (process.ExitCode != 0)
+        if (result.GetExitCode() != 0)
         {
-            throw new CakeException($"GitVersion exited with code {process.ExitCode}: {output}");
+            throw new CakeException($"GitVersion exited with code {result.GetExitCode()}: {output}");
         }
 
         try
