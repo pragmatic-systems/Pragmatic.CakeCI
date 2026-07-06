@@ -1,5 +1,5 @@
 {
-  "NugetPackages": [],
+  "NugetPackages": ["./Pragsys.CakeCI"],
   "DockerPackages": [],
   "Benchmarks": [],
   "ApiSpecs": {}

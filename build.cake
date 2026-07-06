@@ -116,46 +116,12 @@ Task("__VersionInfo")
 
 Task("__NugetPack")
 	.Does(() => {
-
-		foreach(var package in buildManifest.NugetPackages)
-		{
-			Information($"Packing {package}...");
-			var settings = new DotNetMSBuildSettings
-			{
-				PackageVersion = versionNumber
-			};
-
-			var packSettings = new DotNetPackSettings
-			{
-				Configuration = "Release",
-				OutputDirectory = packagesFolder,
-				MSBuildSettings = settings
-			};
-			DotNetPack(package, packSettings);
-		}
+		CiNugetPack(buildManifest, packagesFolder, versionNumber);
 	});
 
 Task("__NugetPush")
 	.Does(() => {
-
-		if (!System.IO.Directory.Exists(packagesFolder))
-		{
-			Information("No packages to push in the packages folder");
-			return;
-		}
-
-		var packedArtifacts = System.IO.Directory.EnumerateFiles(packagesFolder);
-		foreach(var package in packedArtifacts)
-		{
-			Information($"Pushing {package}...");
-			var pushSettings = new DotNetNuGetPushSettings
-			{
-				Source = nugetArgs.Source,
-				ApiKey = nugetArgs.ApiKey
-			};
-
-			DotNetNuGetPush(package, pushSettings);
-		}
+		CiNugetPush(nugetArgs, packagesFolder);
 	});
 
 Task("__DockerLogin")
