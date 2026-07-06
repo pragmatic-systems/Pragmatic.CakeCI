@@ -181,6 +181,7 @@ Task("FullPackAndPush")
 	.IsDependentOn("__NugetPack")
 	.IsDependentOn("__DockerLogin")
 	.IsDependentOn("__DockerPack")
+	.IsDependentOn("__EndSonarScan")
 	.IsDependentOn("__NugetPush")
 	.IsDependentOn("__DockerPush");
 
