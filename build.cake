@@ -5,8 +5,6 @@
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
 #addin nuget:?package=Pragsys.CakeCI&version=0.1.0-dogfood
 
-#addin nuget:?package=Cake.Docker&version=1.3.0
-
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,8 +42,7 @@ var artifactsFolder = "./artifacts";
 var packagesFolder = System.IO.Path.Combine(artifactsFolder, "packages");
 var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
 var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
-
-
+var dockerFolder = System.IO.Path.Combine(artifactsFolder, "docker");
 
 // Setup / Teardown
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,16 +95,16 @@ Task("__LintCheck")
     });
 
 Task("__BeginSonarScan")
-		.Does(() =>
-		{
-			CiSonarScannerBegin(sonarArgs, artifactsFolder);
-		});
+	.Does(() =>
+	{
+		CiSonarScannerBegin(sonarArgs, artifactsFolder);
+	});
 
 Task("__EndSonarScan")
-		.Does(() =>
-		{
-			CiSonarScannerEnd(sonarArgs);
-		});
+	.Does(() =>
+	{
+		CiSonarScannerEnd(sonarArgs);
+	});
 
 Task("__VersionInfo")
 	.Does(() => {
@@ -126,67 +123,24 @@ Task("__NugetPush")
 
 Task("__DockerLogin")
 	.Does(() => {
-
-		Information($"Logging into registry: {containerArgs.Registry}...");
-
-		var loginSettings = new DockerRegistryLoginSettings
-		{ 
-			Password = containerArgs.Token, 
-			Username = containerArgs.UserName
-		};
-
-		DockerLogin(loginSettings, containerArgs.Registry);
+		CiDockerLogin(containerArgs);
 	});
 
 Task("__DockerPack")
 	.IsDependentOn("__VersionInfo")
 	.Does(() => {
-
-		foreach(var package in buildManifest.DockerPackages)
-		{
-			Information($"Packing Docker: {package}...");
-			var directoryName = System.IO.Path.GetDirectoryName(package);
-			Information($"Directory Name: {directoryName}");
-			var parts = directoryName.Split(System.IO.Path.DirectorySeparatorChar);
-			Information($"Parts: {parts.Length}");
-			Information($"Last Part: {parts.Last()}");
-			var packageName = parts.Last().ToLower();
-			packageName = $"{containerArgs.Registry}/{packageName}".ToLower();
-
-			Information($"Packing: {packageName}...");
-			var settings = new DockerImageBuildSettings
-				{
-					Tag = new[] { $"{packageName}:{versionNumber}" },
-					File = package
-				};
-
-			DockerBuild(settings, ".");
-		}
+		CiDockerBuild(buildManifest, containerArgs, versionNumber);
 	});
 
 Task("__DockerPush")
 	.Does(() => {
+		CiDockerPush(buildManifest, containerArgs, versionNumber);
+	});
 
-		foreach(var package in buildManifest.DockerPackages)
-		{
-			Information($"Pushing Docker: {package}...");
-			var directoryName = System.IO.Path.GetDirectoryName(package);
-			Information($"Directory Name: {directoryName}");
-			var parts = directoryName.Split(System.IO.Path.DirectorySeparatorChar);
-			Information($"Parts: {parts.Length}");
-			Information($"Last Part: {parts.Last()}");
-			var packageName = parts.Last().ToLower();
-			packageName = $"{containerArgs.Registry}/{packageName}".ToLower();
-
-			var settings = new DockerImagePushSettings
-			{
-				AllTags = true
-			};
-
-			Information($"Pushing: {packageName}...");
-
-			DockerPush(settings, $"{packageName}");
-		}
+Task("__DockerSave")
+	.IsDependentOn("__VersionInfo")
+	.Does(() => {
+		CiDockerSave(buildManifest, containerArgs, versionNumber, dockerFolder);
 	});
 
 Task("BuildAndTest")
@@ -220,6 +174,15 @@ Task("DockerPackAndPush")
 	.IsDependentOn("__DockerLogin")
 	.IsDependentOn("__DockerPack")
 	.IsDependentOn("__DockerPush");
+
+Task("DockerBuildLocal")
+	.IsDependentOn("__ContainerArgsCheck")
+	.IsDependentOn("__VersionInfo")
+	.IsDependentOn("__LintCheck")
+	.IsDependentOn("__Test")
+	.IsDependentOn("__Benchmark")
+	.IsDependentOn("__DockerPack")
+	.IsDependentOn("__DockerSave");
 
 Task("FullPackAndPush")
 	.IsDependentOn("__NugetArgsCheck")
