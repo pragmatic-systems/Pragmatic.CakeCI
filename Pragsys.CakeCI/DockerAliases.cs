@@ -125,54 +125,6 @@ public static class DockerAliases
     }
 
     /// <summary>
-    /// Saves Docker images to a local folder instead of pushing to a registry.
-    /// Useful for testing without real registry credentials.
-    /// </summary>
-    /// <param name="context">The Cake context.</param>
-    /// <param name="manifest">The build manifest containing Docker package paths.</param>
-    /// <param name="args">The container registry arguments (for package naming).</param>
-    /// <param name="versionNumber">The version tag that was used during build.</param>
-    /// <param name="outputFolder">The folder to save the image tarballs to.</param>
-    [CakeMethodAlias]
-    [CakeAliasCategory("Docker")]
-    public static void CiDockerSave(this ICakeContext context, BuildManifest manifest, ContainerArgs args, string versionNumber, string outputFolder)
-    {
-        if (!Directory.Exists(outputFolder))
-        {
-            Directory.CreateDirectory(outputFolder);
-        }
-
-        foreach (var dockerfilePath in manifest.DockerPackages)
-        {
-            var packageName = GetDockerPackageName(context, dockerfilePath);
-            var fullImageName = GetFullImageName(args, packageName);
-            var tag = $"{fullImageName}:{versionNumber}";
-            var tarballPath = System.IO.Path.Combine(outputFolder, $"{packageName}-{versionNumber}.tar");
-
-            context.Log.Information($"Saving Docker image to: {tarballPath}");
-
-            var settings = new ProcessSettings
-            {
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("save")
-                    .Append("-o")
-                    .Append(tarballPath)
-                    .Append(tag)
-            };
-
-            using var result = context.ProcessRunner.Start("docker", settings);
-            result.WaitForExit();
-
-            if (result.GetExitCode() != 0)
-            {
-                throw new CakeException($"Docker save failed for '{tag}'.");
-            }
-
-            context.Log.Information($"Docker image saved successfully: {tarballPath}");
-        }
-    }
-
-    /// <summary>
     /// Extracts a package name from a Dockerfile path by taking the parent directory name.
     /// </summary>
     private static string GetDockerPackageName(ICakeContext context, string dockerfilePath)

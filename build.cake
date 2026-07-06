@@ -137,12 +137,6 @@ Task("__DockerPush")
 		CiDockerPush(buildManifest, containerArgs, versionNumber);
 	});
 
-Task("__DockerSave")
-	.IsDependentOn("__VersionInfo")
-	.Does(() => {
-		CiDockerSave(buildManifest, containerArgs, versionNumber, dockerFolder);
-	});
-
 Task("BuildAndTest")
 	.IsDependentOn("__Test");
 
@@ -151,9 +145,9 @@ Task("BuildAndBenchmark")
 
 Task("BuildAndSonarScan")
 	.IsDependentOn("__SonarArgsCheck")
+	.IsDependentOn("__BeginSonarScan")
 	.IsDependentOn("__Test")
 	.IsDependentOn("__Benchmark")
-	.IsDependentOn("__BeginSonarScan")
 	.IsDependentOn("__EndSonarScan");
 
 Task("NugetPackAndPush")
@@ -175,20 +169,13 @@ Task("DockerPackAndPush")
 	.IsDependentOn("__DockerPack")
 	.IsDependentOn("__DockerPush");
 
-Task("DockerBuildLocal")
-	.IsDependentOn("__ContainerArgsCheck")
-	.IsDependentOn("__VersionInfo")
-	.IsDependentOn("__LintCheck")
-	.IsDependentOn("__Test")
-	.IsDependentOn("__Benchmark")
-	.IsDependentOn("__DockerPack")
-	.IsDependentOn("__DockerSave");
-
 Task("FullPackAndPush")
 	.IsDependentOn("__NugetArgsCheck")
 	.IsDependentOn("__ContainerArgsCheck")
+	.IsDependentOn("__SonarArgsCheck")
 	.IsDependentOn("__VersionInfo")
 	.IsDependentOn("__LintCheck")
+	.IsDependentOn("__BeginSonarScan")
 	.IsDependentOn("__Test")
 	.IsDependentOn("__Benchmark")
 	.IsDependentOn("__NugetPack")
