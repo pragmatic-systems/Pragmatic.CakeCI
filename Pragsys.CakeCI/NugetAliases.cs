@@ -18,6 +18,7 @@ public static class NugetAliases
 
             //  dotnet pack Pragsys.CakeCI/Pragsys.CakeCI.csproj -c Release -o local-packages --version 0.1.0-dogfood
             var settings = new ProcessSettings();
+            settings.RedirectStandardError = true;
             settings.WithArguments(a =>
             {
                 a.Append("pack");
@@ -35,6 +36,9 @@ public static class NugetAliases
             result.WaitForExit();
             if (result.GetExitCode() != 0)
             {
+                var errors = string.Join("\n", result.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
                 throw new CakeException($"Pack failed: {package}");
             }
         }
@@ -55,6 +59,7 @@ public static class NugetAliases
         foreach (var package in packedArtifacts)
         {
             var settings = new ProcessSettings();
+            settings.RedirectStandardError = true;
             settings.WithArguments(a =>
             {
                 a.Append("nuget");
@@ -71,6 +76,9 @@ public static class NugetAliases
             result.WaitForExit();
             if (result.GetExitCode() != 0)
             {
+                var errors = string.Join("\n", result.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
                 throw new CakeException($"Push failed: {package}");
             }
         }

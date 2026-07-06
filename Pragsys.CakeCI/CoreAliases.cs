@@ -33,6 +33,7 @@ public static class CoreAliases
             var artifactsPath = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
 
             var settings = new ProcessSettings();
+            settings.RedirectStandardError = true;
             settings.WithArguments(a =>
             {
                 a.Append("test");
@@ -45,7 +46,10 @@ public static class CoreAliases
             result.WaitForExit();
             if (result.GetExitCode() != 0)
             {
-                throw new CakeException("Tests failed");
+                var errors = string.Join("\n", result.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
+                throw new CakeException($"Tests failed for {projectName}");
             }
 
             context.Log.Information("Tests pass");
@@ -60,6 +64,7 @@ public static class CoreAliases
 
         // Run `dotnet format --verify-no-changes`
         var settings = new ProcessSettings();
+        settings.RedirectStandardError = true;
         settings.WithArguments(a =>
         {
             a.Append("format");
@@ -70,6 +75,9 @@ public static class CoreAliases
         result.WaitForExit();
         if (result.GetExitCode() != 0)
         {
+            var errors = string.Join("\n", result.GetStandardError());
+            if (!string.IsNullOrEmpty(errors))
+                context.Log.Error(errors);
             throw new CakeException("Lint check failed: code formatting violations detected. Run `dotnet format`");
         }
         context.Log.Information("Lint check passed – no formatting changes required.");
@@ -138,6 +146,7 @@ public static class CoreAliases
             context.Log.Information($"Benchmarking {benchName}...");
 
             var settings = new ProcessSettings();
+            settings.RedirectStandardError = true;
             settings.WithArguments(a =>
             {
                 a.Append("run");
@@ -153,6 +162,9 @@ public static class CoreAliases
             result.WaitForExit();
             if (result.GetExitCode() != 0)
             {
+                var errors = string.Join("\n", result.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
                 throw new CakeException($"Benchmark failed: {benchName}");
             }
         }

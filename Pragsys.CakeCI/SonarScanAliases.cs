@@ -91,6 +91,7 @@ public static class SonarScanAliases
             .Append("/d:sonar.verbose=true");
         var beginSettings = new ProcessSettings
         {
+            RedirectStandardError = true,
             Arguments = beginArgs
         };
 
@@ -98,6 +99,9 @@ public static class SonarScanAliases
         beginResult.WaitForExit();
         if (beginResult.GetExitCode() != 0)
         {
+            var errors = string.Join("\n", beginResult.GetStandardError());
+            if (!string.IsNullOrEmpty(errors))
+                context.Log.Error(errors);
             throw new CakeException("Sonar scanner begin failed.");
         }
 
@@ -113,6 +117,7 @@ public static class SonarScanAliases
 
             var buildSettings = new ProcessSettings
             {
+                RedirectStandardError = true,
                 Arguments = new ProcessArgumentBuilder()
                     .Append("build")
                     .Append(solution)
@@ -122,6 +127,9 @@ public static class SonarScanAliases
             buildResult.WaitForExit();
             if (buildResult.GetExitCode() != 0)
             {
+                var errors = string.Join("\n", buildResult.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
                 throw new CakeException("Solution build failed.");
             }
         }
@@ -149,6 +157,7 @@ public static class SonarScanAliases
             .Append($"/d:sonar.token={sonarArgs.Token}");
         var endSettings = new ProcessSettings
         {
+            RedirectStandardError = true,
             Arguments = endArgs
         };
 
@@ -161,6 +170,9 @@ public static class SonarScanAliases
         }
         else
         {
+            var errors = string.Join("\n", endResult.GetStandardError());
+            if (!string.IsNullOrEmpty(errors))
+                context.Log.Error(errors);
             throw new CakeException("Sonar analysis failed.");
         }
     }

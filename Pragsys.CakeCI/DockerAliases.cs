@@ -24,6 +24,7 @@ public static class DockerAliases
 
         var settings = new ProcessSettings
         {
+            RedirectStandardError = true,
             Arguments = new ProcessArgumentBuilder()
                 .Append("login")
                 .Append(args.Registry)
@@ -38,6 +39,9 @@ public static class DockerAliases
 
         if (result.GetExitCode() != 0)
         {
+            var errors = string.Join("\n", result.GetStandardError());
+            if (!string.IsNullOrEmpty(errors))
+                context.Log.Error(errors);
             throw new CakeException($"Docker login failed for registry '{args.Registry}'.");
         }
 
@@ -65,6 +69,7 @@ public static class DockerAliases
 
             var settings = new ProcessSettings
             {
+                RedirectStandardError = true,
                 Arguments = new ProcessArgumentBuilder()
                     .Append("build")
                     .Append("-t")
@@ -79,6 +84,9 @@ public static class DockerAliases
 
             if (result.GetExitCode() != 0)
             {
+                var errors = string.Join("\n", result.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
                 throw new CakeException($"Docker build failed for '{dockerfilePath}'.");
             }
 
@@ -107,6 +115,7 @@ public static class DockerAliases
 
             var settings = new ProcessSettings
             {
+                RedirectStandardError = true,
                 Arguments = new ProcessArgumentBuilder()
                     .Append("push")
                     .Append(tag)
@@ -117,6 +126,9 @@ public static class DockerAliases
 
             if (result.GetExitCode() != 0)
             {
+                var errors = string.Join("\n", result.GetStandardError());
+                if (!string.IsNullOrEmpty(errors))
+                    context.Log.Error(errors);
                 throw new CakeException($"Docker push failed for '{tag}'.");
             }
 

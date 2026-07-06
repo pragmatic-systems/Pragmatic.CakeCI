@@ -1,5 +1,4 @@
-// No-op benchmark that generates a marker artifact file.
-
+// No-op benchmark that generates a marker artifact file. This file exists only to test the Benchmark flow during build.cake execution.
 var artifactsDir = args.Length >= 2 && args[0] == "--artifacts" ? args[1] : null;
 
 if (!string.IsNullOrEmpty(artifactsDir))
