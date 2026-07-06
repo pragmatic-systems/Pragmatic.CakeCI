@@ -12,15 +12,37 @@ namespace Pragsys.CakeCI;
 public static class SonarScanAliases
 {
     /// <summary>
-    /// Resolves the path to the dotnet-sonarscanner tool.
-    /// Checks for a pre-installed package in the tools directory, or falls back to the shim executable.
+    /// Resolves the path to the SonarScanner.MSBuild.dll from the dotnet-sonarscanner package
+    /// installed via <c>#tool</c> in the tools directory.
     /// </summary>
     /// <param name="context">The Cake context.</param>
     /// <param name="toolsDir">Optional tools directory. Defaults to <c>./tools</c> relative to the working directory.</param>
-    /// <returns>A tuple of (command, arguments) to invoke the sonarscanner.</returns>
+    /// <returns>The full path to SonarScanner.MSBuild.dll.</returns>
     private static string ResolveSonarScannerPath(ICakeContext context, DirectoryPath? toolsDir = null)
     {
-        return "dotnet-sonarscanner.exe";
+        if (toolsDir == null)
+        {
+            var workingDir = context.Environment.WorkingDirectory;
+            toolsDir = workingDir.Combine("tools");
+        }
+
+        var packageDir = System.IO.Directory.GetDirectories(toolsDir.FullPath, "dotnet-sonarscanner.*")
+            .OrderByDescending(d => d)
+            .FirstOrDefault();
+
+        if (packageDir == null)
+        {
+            throw new CakeException($"dotnet-sonarscanner package directory not found in {toolsDir.FullPath}.");
+        }
+
+        var dllPath = System.IO.Path.Combine(packageDir, "tools", "netcoreapp3.1", "any", "SonarScanner.MSBuild.dll");
+        if (!System.IO.File.Exists(dllPath))
+        {
+            throw new CakeException($"SonarScanner.MSBuild.dll not found at {dllPath}.");
+        }
+
+        context.Log.Information($"Using Sonar scanner from {packageDir}");
+        return dllPath;
     }
 
     /// <summary>
@@ -51,11 +73,12 @@ public static class SonarScanAliases
         context.Log.Information($"Sonar coverage report paths: {reportPaths}");
 
         // Resolve scanner path
-        var scannerCommand = ResolveSonarScannerPath(context, toolsDir);
-        context.Log.Information($"Using Sonar scanner: {scannerCommand}");
+        var scannerDll = ResolveSonarScannerPath(context, toolsDir);
+        context.Log.Information($"Using Sonar scanner DLL: {scannerDll}");
 
         // Run dotnet-sonarscanner begin
         var beginArgs = new ProcessArgumentBuilder()
+            .Append(scannerDll)
             .Append("begin")
             .Append($"/key:{sonarArgs.ProjectKey}")
             .Append($"/name:{sonarArgs.ProjectName}")
@@ -71,7 +94,7 @@ public static class SonarScanAliases
             Arguments = beginArgs
         };
 
-        using var beginResult = context.ProcessRunner.Start(scannerCommand, beginSettings);
+        using var beginResult = context.ProcessRunner.Start("dotnet", beginSettings);
         beginResult.WaitForExit();
         if (beginResult.GetExitCode() != 0)
         {
@@ -118,9 +141,10 @@ public static class SonarScanAliases
     [CakeAliasCategory("Sonar")]
     public static void CiSonarScannerEnd(this ICakeContext context, SonarArgs sonarArgs, DirectoryPath? toolsDir = null)
     {
-        var scannerCommand = ResolveSonarScannerPath(context, toolsDir);
+        var scannerDll = ResolveSonarScannerPath(context, toolsDir);
 
         var endArgs = new ProcessArgumentBuilder()
+            .Append(scannerDll)
             .Append("end")
             .Append($"/d:sonar.token={sonarArgs.Token}");
         var endSettings = new ProcessSettings
@@ -128,7 +152,7 @@ public static class SonarScanAliases
             Arguments = endArgs
         };
 
-        using var endResult = context.ProcessRunner.Start(scannerCommand, endSettings);
+        using var endResult = context.ProcessRunner.Start("dotnet", endSettings);
         endResult.WaitForExit();
 
         if (endResult.GetExitCode() == 0)
