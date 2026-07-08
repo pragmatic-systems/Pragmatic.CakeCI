@@ -117,9 +117,9 @@ Task("FullPackAndPush")
 		sonarArgs.Validate();
 		versionNumber = CiVersion(versionNumber);
 		CiLint();
+		CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		CiTest();
 		CiBenchmark();
-		CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		CiNugetPack(buildManifest, packagesFolder, versionNumber);
 		CiDockerLogin(containerArgs);
 		CiDockerBuild(buildManifest, containerArgs, versionNumber);
