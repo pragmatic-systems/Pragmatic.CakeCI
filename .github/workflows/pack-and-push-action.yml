@@ -36,8 +36,11 @@ jobs:
         with:
           script-path: build.cake
           target: FullPackAndPush
-          NuGetApiKey: ${{ secrets.PUBLIC_NUGET_APIKEY }}
-          NuGetSource: ${{ vars.PUBLIC_NUGET_SOURCE }}
+          NugetSource: ${{ vars.PRIVATE_NUGET_SOURCE }}
+          NugetApiKey: ${{ secrets.GITHUB_TOKEN }}
+          ContainerRegistry: ${{ secrets.PRIVATE_CONTAINER_REGISTRY }}
+          ContainerRegistryToken: ${{ secrets.GITHUB_TOKEN }}
+          ContainerRegistryUserName: ${{ vars.PRIVATE_CONTAINER_REGISTRY_USERNAME }}
           SonarOrg: ${{ vars.SONARORG }}
           SonarToken: ${{ secrets.SONARTOKEN }}
           SonarHostUrl: ${{ vars.SONARHOST }}

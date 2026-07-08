@@ -24,8 +24,8 @@ BuildManifest buildManifest;
 
 var nugetArgs = new NugetArgs
 {
-    Source = CiArgument("Source"),
-    ApiKey = CiArgument("ApiKey"),
+    Source = CiArgument("NugetSource"),
+    ApiKey = CiArgument("NugetApiKey"),
 };
 var containerArgs = new ContainerArgs
 {
