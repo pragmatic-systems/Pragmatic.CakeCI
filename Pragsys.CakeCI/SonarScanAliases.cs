@@ -91,27 +91,6 @@ public static class SonarScanAliases
             .Append("/d:sonar.verbose=true");
 
         ProcessHelper.Run(context, "dotnet", beginArgs, "Sonar scanner begin failed.");
-
-        // Build the solution by finding .sln or .slnx files
-        var slnFiles = System.IO.Directory.GetFiles(scriptDirectory.FullPath, "*.sln", System.IO.SearchOption.AllDirectories)
-            .Concat(System.IO.Directory.GetFiles(scriptDirectory.FullPath, "*.slnx", System.IO.SearchOption.AllDirectories))
-            .ToArray();
-
-        if (slnFiles.Length > 0)
-        {
-            var solution = slnFiles[0];
-            context.Log.Information($"Building solution: {solution}");
-
-            var buildArgs = new ProcessArgumentBuilder()
-                .Append("build")
-                .Append(solution);
-
-            ProcessHelper.Run(context, "dotnet", buildArgs, "Solution build failed.");
-        }
-        else
-        {
-            context.Log.Warning("No solution file (.sln or .slnx) found to build.");
-        }
     }
 
     /// <summary>
