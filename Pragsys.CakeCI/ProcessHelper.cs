@@ -27,8 +27,6 @@ internal static class ProcessHelper
             Arguments = arguments,
         };
 
-        var cmdLine = $"{exe} {arguments.Render()}";
-
         using var result = context.ProcessRunner.Start(exe, settings);
         result.WaitForExit();
 

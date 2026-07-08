@@ -43,7 +43,7 @@ public static class NugetAliases
             return;
         }
 
-        foreach (var package in System.IO.Directory.EnumerateFiles(packagesFolder))
+        foreach (var package in System.IO.Directory.EnumerateFiles(packagesFolder, "*.nupkg"))
         {
             var pushArgs = new ProcessArgumentBuilder()
                 .Append("nuget")
