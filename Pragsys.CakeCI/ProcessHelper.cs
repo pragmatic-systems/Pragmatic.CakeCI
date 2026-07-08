@@ -19,12 +19,12 @@ internal static class ProcessHelper
     /// <param name="captureStdout">Whether to capture and return stdout (useful for parsing structured output).</param>
     /// <returns>Captured stdout if <paramref name="captureStdout"/> is true, otherwise null.</returns>
     /// <exception cref=CakeException">Thrown when the process exits with a non-zero code.</exception>
-    public static string? Run(ICakeContext context, string exe, ProcessArgumentBuilder arguments, string errorMessage, bool captureStdout = false)
+    public static string? Run(ICakeContext context, string exe, ProcessArgumentBuilder arguments, string errorMessage)
     {
         var settings = new ProcessSettings
         {
             RedirectStandardError = true,
-            RedirectStandardOutput = captureStdout,
+            RedirectStandardOutput = true,
             Arguments = arguments,
         };
 
@@ -37,13 +37,10 @@ internal static class ProcessHelper
         var exitCode = result.GetExitCode();
 
         // Log stdout if captured
-        if (captureStdout)
+        var stdout = string.Join("\n", result.GetStandardOutput());
+        if (!string.IsNullOrEmpty(stdout))
         {
-            var stdout = string.Join("\n", result.GetStandardOutput());
-            if (!string.IsNullOrEmpty(stdout))
-            {
-                context.Log.Information($"[{exe}] stdout:\n{stdout}");
-            }
+            context.Log.Information($"[{exe}] stdout:\n{stdout}");
         }
 
         // Log stderr always (when available)
@@ -61,12 +58,6 @@ internal static class ProcessHelper
             throw new CakeException($"{errorMessage} (exit code {exitCode})");
         }
 
-        // Return stdout for callers that need to parse it
-        if (captureStdout)
-        {
-            return string.Join("\n", result.GetStandardOutput());
-        }
-
-        return null;
+        return stdout;
     }
 }
