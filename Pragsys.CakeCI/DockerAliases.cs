@@ -106,15 +106,16 @@ public static class DockerAliases
             return "default-image";
         }
 
-        var parts = directoryName.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-        return parts.Last().ToLowerInvariant();
+        // Path.GetFileName handles both '/' and '\' separators regardless of platform,
+        // so this works even when cakemix paths use forward slashes on Windows.
+        return System.IO.Path.GetFileName(directoryName).ToLowerInvariant();
     }
 
     /// <summary>
     /// Builds the full image name with optional registry prefix.
     /// Falls back to local image name when registry is not configured.
     /// </summary>
-    private static string GetFullImageName(ContainerArgs args, string packageName)
+    internal static string GetFullImageName(ContainerArgs args, string packageName)
     {
         var name = packageName.ToLowerInvariant();
         if (!string.IsNullOrEmpty(args.Registry))
