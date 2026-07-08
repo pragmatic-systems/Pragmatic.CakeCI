@@ -9,6 +9,8 @@ namespace Pragsys.CakeCI;
 /// </summary>
 internal static class ProcessHelper
 {
+    private const int MaxLogLines = 256;
+
     /// <summary>
     /// Runs a process, logs stdout/stderr, and throws on non-zero exit codes.
     /// </summary>
@@ -32,15 +34,16 @@ internal static class ProcessHelper
 
         var exitCode = result.GetExitCode();
 
+        var stdout = string.Join("\n", result.GetStandardOutput().Take(MaxLogLines));
+        var stderr = string.Join("\n", result.GetStandardError().Take(MaxLogLines));
+
         // Log stdout if captured
-        var stdout = string.Join("\n", result.GetStandardOutput());
         if (!string.IsNullOrEmpty(stdout))
         {
             context.Log.Information($"[{exe}] stdout:\n{stdout}");
         }
 
         // Log stderr always (when available)
-        var stderr = string.Join("\n", result.GetStandardError());
         if (!string.IsNullOrEmpty(stderr))
         {
             if (exitCode != 0)
