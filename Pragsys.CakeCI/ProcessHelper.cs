@@ -16,8 +16,7 @@ internal static class ProcessHelper
     /// <param name="exe">The executable to run.</param>
     /// <param name="arguments">The arguments to pass.</param>
     /// <param name="errorMessage">Message to include in the exception on failure.</param>
-    /// <param name="captureStdout">Whether to capture and return stdout (useful for parsing structured output).</param>
-    /// <returns>Captured stdout if <paramref name="captureStdout"/> is true, otherwise null.</returns>
+    /// <returns>Captured stdout.</returns>
     /// <exception cref=CakeException">Thrown when the process exits with a non-zero code.</exception>
     public static string? Run(ICakeContext context, string exe, ProcessArgumentBuilder arguments, string errorMessage)
     {
@@ -29,7 +28,6 @@ internal static class ProcessHelper
         };
 
         var cmdLine = $"{exe} {arguments.Render()}";
-        context.Log.Information($"Executing: {cmdLine}");
 
         using var result = context.ProcessRunner.Start(exe, settings);
         result.WaitForExit();

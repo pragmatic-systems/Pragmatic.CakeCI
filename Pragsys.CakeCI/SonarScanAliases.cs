@@ -26,9 +26,9 @@ public static class SonarScanAliases
             toolsDir = workingDir.Combine("tools");
         }
 
-        var packageDir = System.IO.Directory.GetDirectories(toolsDir.FullPath, "dotnet-sonarscanner.*")
-            .OrderByDescending(d => d)
-            .FirstOrDefault();
+        var packageDir = System.IO.Directory
+            .GetDirectories(toolsDir.FullPath, "dotnet-sonarscanner.*")
+            .SingleOrDefault();
 
         if (packageDir == null)
         {

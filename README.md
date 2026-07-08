@@ -1,5 +1,5 @@
 # CakeTools
-Cake tools for build, unit test, acceptance test, load test, benchmark, and various pack/push operations.
+Cake tools for build, test, benchmark, sonar scan and various pack/push operations.
 
 ## Why Cake?
 Github Actions are closed source and proprietary - If they are unavailable and you rely on them for CI, you can't build, test, publish your application. 
@@ -8,6 +8,8 @@ Because of that I've opted for Cake which can be run both locally, and via GHA.
 
 ## Overview
 This build.cake file uses a `.cakemix` configuration file to determine what to pack, test, benchmark etc. It will create an initial version when first run in a project that will make a best guess default setup.
+
+This project targets the Microsoft Testing Platform test runner, and assumes that the benchmark project is an executable that runs BenchmarkRunner.
 
 ## Cakemix Sample Schema
 
