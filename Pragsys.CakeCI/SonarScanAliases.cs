@@ -65,7 +65,7 @@ public static class SonarScanAliases
         // Discover coverage report paths from test projects
         var testProjects = System.IO.Directory.GetFiles(
             scriptDirectory.FullPath,
-            "*Tests.csproj",
+            "*.Tests.csproj",
             System.IO.SearchOption.AllDirectories);
 
         var reports = testProjects
