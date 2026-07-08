@@ -5,6 +5,9 @@ using Cake.Core.IO;
 
 namespace Pragsys.CakeCI;
 
+/// <summary>
+/// Aliases for NuGet package packing and pushing.
+/// </summary>
 [CakeAliasCategory("PragsysCI")]
 public static class NugetAliases
 {
@@ -16,37 +19,23 @@ public static class NugetAliases
         {
             context.Log.Information($"Packing {package}...");
 
-            //  dotnet pack Pragsys.CakeCI/Pragsys.CakeCI.csproj -c Release -o local-packages --version 0.1.0-dogfood
-            var settings = new ProcessSettings();
-            settings.RedirectStandardError = true;
-            settings.WithArguments(a =>
-            {
-                a.Append("pack");
-                a.Append(package);
-                a.Append("-c");
-                a.Append("Release");
-                a.Append("-o");
-                a.Append(packagesFolder);
-                a.Append("--version");
-                a.Append(versionNumber);
-            });
+            var args = new ProcessArgumentBuilder()
+                .Append("pack")
+                .Append(package)
+                .Append("-c")
+                .Append("Release")
+                .Append("-o")
+                .Append(packagesFolder)
+                .Append("--version")
+                .Append(versionNumber);
 
-            using var result = context.ProcessRunner.Start("dotnet", settings);
-
-            result.WaitForExit();
-            if (result.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", result.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException($"Pack failed: {package}");
-            }
+            ProcessHelper.Run(context, "dotnet", args, $"Pack failed: {package}");
         }
     }
 
     [CakeMethodAlias]
     [CakeAliasCategory("NugetPush")]
-    public static void CiNugetPush(this ICakeContext context, NugetArgs manifest, string packagesFolder)
+    public static void CiNugetPush(this ICakeContext context, NugetArgs args, string packagesFolder)
     {
         if (!System.IO.Directory.Exists(packagesFolder))
         {
@@ -54,33 +43,18 @@ public static class NugetAliases
             return;
         }
 
-        // dotnet nuget push <package-file> --api-key <API-key> --source <source-url>
-        var packedArtifacts = System.IO.Directory.EnumerateFiles(packagesFolder);
-        foreach (var package in packedArtifacts)
+        foreach (var package in System.IO.Directory.EnumerateFiles(packagesFolder))
         {
-            var settings = new ProcessSettings();
-            settings.RedirectStandardError = true;
-            settings.WithArguments(a =>
-            {
-                a.Append("nuget");
-                a.Append("push");
-                a.Append(package);
-                a.Append("--api-key");
-                a.Append(manifest.ApiKey);
-                a.Append("--source");
-                a.Append(manifest.Source);
-            });
+            var pushArgs = new ProcessArgumentBuilder()
+                .Append("nuget")
+                .Append("push")
+                .Append(package)
+                .Append("--api-key")
+                .Append(args.ApiKey)
+                .Append("--source")
+                .Append(args.Source);
 
-            using var result = context.ProcessRunner.Start("dotnet", settings);
-
-            result.WaitForExit();
-            if (result.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", result.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException($"Push failed: {package}");
-            }
+            ProcessHelper.Run(context, "dotnet", pushArgs, $"Push failed: {package}");
         }
     }
 }

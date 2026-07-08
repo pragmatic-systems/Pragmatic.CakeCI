@@ -6,7 +6,7 @@ using Cake.Core.IO;
 namespace Pragsys.CakeCI;
 
 /// <summary>
-/// Aliases for resolving CI arguments from command-line args with environment variable fallback.
+/// Aliases for core CI operations: test, lint, version resolution, and benchmarking.
 /// </summary>
 [CakeAliasCategory("PragsysCI")]
 public static class CoreAliases
@@ -15,44 +15,27 @@ public static class CoreAliases
     [CakeAliasCategory("Test")]
     public static void CiTest(this ICakeContext context)
     {
-        // Assumes the .cake script resides at the repository root.
         var scriptDirectory = context.Environment.WorkingDirectory;
+        var artifactsPath = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
 
         var testProjects = System.IO.Directory.GetFiles(
-                    "./",
-                    "*.Tests.csproj",
-                    System.IO.SearchOption.AllDirectories);
+            "./",
+            "*.Tests.csproj",
+            System.IO.SearchOption.AllDirectories);
 
         foreach (var testProject in testProjects)
         {
             var projectName = System.IO.Path.GetFileNameWithoutExtension(testProject.ToString());
-
-            // NOTE: New dotnet test model moves the relative path to inside the local app.
             context.Log.Information($"Testing - {projectName}");
 
-            var artifactsPath = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
+            var args = new ProcessArgumentBuilder()
+                .Append("test")
+                .Append(testProject)
+                .Append("--")
+                .AppendQuoted($"--results-directory {artifactsPath} --report-ctrf --coverage --coverage-output '{projectName}.coverage.xml' --coverage-output-format xml");
 
-            var settings = new ProcessSettings();
-            settings.RedirectStandardError = true;
-            settings.WithArguments(a =>
-            {
-                a.Append("test");
-                a.Append(testProject);
-                a.Append("--");
-                a.AppendQuoted($"--results-directory {artifactsPath} --report-ctrf --coverage --coverage-output '{projectName}.coverage.xml' --coverage-output-format xml");
-            });
-
-            using var result = context.ProcessRunner.Start("dotnet", settings);
-            result.WaitForExit();
-            if (result.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", result.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException($"Tests failed for {projectName}");
-            }
-
-            context.Log.Information("Tests pass");
+            ProcessHelper.Run(context, "dotnet", args, $"Tests failed for {projectName}");
+            context.Log.Information($"{projectName} tests passed");
         }
     }
 
@@ -62,24 +45,11 @@ public static class CoreAliases
     {
         context.Log.Information("Running lint check with dotnet format...");
 
-        // Run `dotnet format --verify-no-changes`
-        var settings = new ProcessSettings();
-        settings.RedirectStandardError = true;
-        settings.WithArguments(a =>
-        {
-            a.Append("format");
-            a.Append("--verify-no-changes");
-        });
+        var args = new ProcessArgumentBuilder()
+            .Append("format")
+            .Append("--verify-no-changes");
 
-        using var result = context.ProcessRunner.Start("dotnet", settings);
-        result.WaitForExit();
-        if (result.GetExitCode() != 0)
-        {
-            var errors = string.Join("\n", result.GetStandardError());
-            if (!string.IsNullOrEmpty(errors))
-                context.Log.Error(errors);
-            throw new CakeException("Lint check failed: code formatting violations detected. Run `dotnet format`");
-        }
+        ProcessHelper.Run(context, "dotnet", args, "Lint check failed: code formatting violations detected. Run `dotnet format`");
         context.Log.Information("Lint check passed – no formatting changes required.");
     }
 
@@ -95,19 +65,9 @@ public static class CoreAliases
 
         context.Log.Information("Resolving version from GitVersion...");
 
-        var settings = new ProcessSettings();
-        settings.RedirectStandardOutput = true;
-        settings.WithArguments(a => a.Append("gitversion"));
-
-        using var result = context.ProcessRunner.Start("dotnet", settings);
-        result.WaitForExit();
-
-        var output = string.Join("\n", result.GetStandardOutput());
-
-        if (result.GetExitCode() != 0)
-        {
-            throw new CakeException($"GitVersion exited with code {result.GetExitCode()}: {output}");
-        }
+        var args = new ProcessArgumentBuilder().Append("gitversion");
+        var output = ProcessHelper.Run(context, "dotnet", args, "GitVersion failed", captureStdout: true)
+            ?? throw new CakeException("GitVersion returned no output.");
 
         try
         {
@@ -136,37 +96,25 @@ public static class CoreAliases
         var artifactsFolder = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
 
         var benchmarkProjects = System.IO.Directory.GetFiles(
-                    "./",
-                    "*.Benchmark.csproj",
-                    System.IO.SearchOption.AllDirectories);
+            "./",
+            "*.Benchmark.csproj",
+            System.IO.SearchOption.AllDirectories);
 
         foreach (var benchmarkProject in benchmarkProjects)
         {
             var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmarkProject);
             context.Log.Information($"Benchmarking {benchName}...");
 
-            var settings = new ProcessSettings();
-            settings.RedirectStandardError = true;
-            settings.WithArguments(a =>
-            {
-                a.Append("run");
-                a.Append("--project");
-                a.Append(benchmarkProject);
-                a.Append("--configuration");
-                a.Append("Release");
-                a.Append("--artifacts");
-                a.AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
-            });
+            var args = new ProcessArgumentBuilder()
+                .Append("run")
+                .Append("--project")
+                .Append(benchmarkProject)
+                .Append("--configuration")
+                .Append("Release")
+                .Append("--artifacts")
+                .AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
 
-            using var result = context.ProcessRunner.Start("dotnet", settings);
-            result.WaitForExit();
-            if (result.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", result.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException($"Benchmark failed: {benchName}");
-            }
+            ProcessHelper.Run(context, "dotnet", args, $"Benchmark failed: {benchName}");
         }
     }
 }

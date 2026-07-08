@@ -22,29 +22,15 @@ public static class DockerAliases
     {
         context.Log.Information($"Logging into container registry: {args.Registry}...");
 
-        var settings = new ProcessSettings
-        {
-            RedirectStandardError = true,
-            Arguments = new ProcessArgumentBuilder()
-                .Append("login")
-                .Append(args.Registry)
-                .Append("-u")
-                .Append(args.UserName)
-                .Append("-p")
-                .Append(args.Token)
-        };
+        var dockerArgs = new ProcessArgumentBuilder()
+            .Append("login")
+            .Append(args.Registry)
+            .Append("-u")
+            .Append(args.UserName)
+            .Append("-p")
+            .Append(args.Token);
 
-        using var result = context.ProcessRunner.Start("docker", settings);
-        result.WaitForExit();
-
-        if (result.GetExitCode() != 0)
-        {
-            var errors = string.Join("\n", result.GetStandardError());
-            if (!string.IsNullOrEmpty(errors))
-                context.Log.Error(errors);
-            throw new CakeException($"Docker login failed for registry '{args.Registry}'.");
-        }
-
+        ProcessHelper.Run(context, "docker", dockerArgs, $"Docker login failed for registry '{args.Registry}'");
         context.Log.Information("Docker login successful.");
     }
 
@@ -67,29 +53,15 @@ public static class DockerAliases
 
             context.Log.Information($"Building Docker image: {tag}");
 
-            var settings = new ProcessSettings
-            {
-                RedirectStandardError = true,
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("build")
-                    .Append("-t")
-                    .Append(tag)
-                    .Append("-f")
-                    .Append(dockerfilePath)
-                    .Append(".")
-            };
+            var dockerArgs = new ProcessArgumentBuilder()
+                .Append("build")
+                .Append("-t")
+                .Append(tag)
+                .Append("-f")
+                .Append(dockerfilePath)
+                .Append(".");
 
-            using var result = context.ProcessRunner.Start("docker", settings);
-            result.WaitForExit();
-
-            if (result.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", result.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException($"Docker build failed for '{dockerfilePath}'.");
-            }
-
+            ProcessHelper.Run(context, "docker", dockerArgs, $"Docker build failed for '{dockerfilePath}'");
             context.Log.Information($"Docker image built successfully: {tag}");
         }
     }
@@ -113,25 +85,11 @@ public static class DockerAliases
 
             context.Log.Information($"Pushing Docker image: {tag}");
 
-            var settings = new ProcessSettings
-            {
-                RedirectStandardError = true,
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("push")
-                    .Append(tag)
-            };
+            var dockerArgs = new ProcessArgumentBuilder()
+                .Append("push")
+                .Append(tag);
 
-            using var result = context.ProcessRunner.Start("docker", settings);
-            result.WaitForExit();
-
-            if (result.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", result.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException($"Docker push failed for '{tag}'.");
-            }
-
+            ProcessHelper.Run(context, "docker", dockerArgs, $"Docker push failed for '{tag}'");
             context.Log.Information($"Docker image pushed successfully: {tag}");
         }
     }

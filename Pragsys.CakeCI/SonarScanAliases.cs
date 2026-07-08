@@ -89,21 +89,8 @@ public static class SonarScanAliases
             .Append($"/d:sonar.cs.vscoveragexml.reportsPaths={reportPaths}")
             .Append("/d:sonar.qualitygate.wait=true")
             .Append("/d:sonar.verbose=true");
-        var beginSettings = new ProcessSettings
-        {
-            RedirectStandardError = true,
-            Arguments = beginArgs
-        };
 
-        using var beginResult = context.ProcessRunner.Start("dotnet", beginSettings);
-        beginResult.WaitForExit();
-        if (beginResult.GetExitCode() != 0)
-        {
-            var errors = string.Join("\n", beginResult.GetStandardError());
-            if (!string.IsNullOrEmpty(errors))
-                context.Log.Error(errors);
-            throw new CakeException("Sonar scanner begin failed.");
-        }
+        ProcessHelper.Run(context, "dotnet", beginArgs, "Sonar scanner begin failed.");
 
         // Build the solution by finding .sln or .slnx files
         var slnFiles = System.IO.Directory.GetFiles(scriptDirectory.FullPath, "*.sln", System.IO.SearchOption.AllDirectories)
@@ -115,23 +102,11 @@ public static class SonarScanAliases
             var solution = slnFiles[0];
             context.Log.Information($"Building solution: {solution}");
 
-            var buildSettings = new ProcessSettings
-            {
-                RedirectStandardError = true,
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("build")
-                    .Append(solution)
-            };
+            var buildArgs = new ProcessArgumentBuilder()
+                .Append("build")
+                .Append(solution);
 
-            using var buildResult = context.ProcessRunner.Start("dotnet", buildSettings);
-            buildResult.WaitForExit();
-            if (buildResult.GetExitCode() != 0)
-            {
-                var errors = string.Join("\n", buildResult.GetStandardError());
-                if (!string.IsNullOrEmpty(errors))
-                    context.Log.Error(errors);
-                throw new CakeException("Solution build failed.");
-            }
+            ProcessHelper.Run(context, "dotnet", buildArgs, "Solution build failed.");
         }
         else
         {
@@ -155,25 +130,8 @@ public static class SonarScanAliases
             .Append(scannerDll)
             .Append("end")
             .Append($"/d:sonar.token={sonarArgs.Token}");
-        var endSettings = new ProcessSettings
-        {
-            RedirectStandardError = true,
-            Arguments = endArgs
-        };
 
-        using var endResult = context.ProcessRunner.Start("dotnet", endSettings);
-        endResult.WaitForExit();
-
-        if (endResult.GetExitCode() == 0)
-        {
-            context.Log.Information("Sonar analysis completed successfully.");
-        }
-        else
-        {
-            var errors = string.Join("\n", endResult.GetStandardError());
-            if (!string.IsNullOrEmpty(errors))
-                context.Log.Error(errors);
-            throw new CakeException("Sonar analysis failed.");
-        }
+        ProcessHelper.Run(context, "dotnet", endArgs, "Sonar analysis failed.");
+        context.Log.Information("Sonar analysis completed successfully.");
     }
 }
