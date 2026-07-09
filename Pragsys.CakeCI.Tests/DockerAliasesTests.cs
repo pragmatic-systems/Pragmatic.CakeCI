@@ -17,7 +17,7 @@ public class DockerAliasesTests
 
         var result = DockerAliases.GetFullImageName(args, packageName);
 
-        result.Should().Be(expected);
+        result.ShouldBe(expected);
     }
 
     [Theory]
@@ -35,7 +35,7 @@ public class DockerAliasesTests
 
         var result = DockerAliases.GetFullImageName(args, packageName);
 
-        result.Should().Be(expected);
+        result.ShouldBe(expected);
     }
 
     [Theory]
@@ -49,7 +49,7 @@ public class DockerAliasesTests
         var directoryName = System.IO.Path.GetDirectoryName(dockerfilePath);
         var packageName = System.IO.Path.GetFileName(directoryName!).ToLowerInvariant();
 
-        packageName.Should().Be(expectedName);
+        packageName.ShouldBe(expectedName);
     }
 
     [Fact]
@@ -60,6 +60,6 @@ public class DockerAliasesTests
         var directoryName = System.IO.Path.GetDirectoryName(dockerfilePath);
         var packageName = System.IO.Path.GetFileName(directoryName!).ToLowerInvariant();
 
-        packageName.Should().Be("myapp");
+        packageName.ShouldBe("myapp");
     }
 }

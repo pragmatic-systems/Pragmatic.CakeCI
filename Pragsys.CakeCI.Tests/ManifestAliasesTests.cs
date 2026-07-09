@@ -35,10 +35,10 @@ public class ManifestAliasesTests
         {
             var result = _context.Object.LoadBuildManifest(tempFile);
 
-            result.Should().NotBeNull();
-            result.NugetPackages.Should().ContainEquivalentOf("./src/A.csproj");
-            result.DockerPackages.Should().ContainEquivalentOf("./src/B/Dockerfile");
-            result.Benchmarks.Should().BeEmpty();
+            result.ShouldNotBeNull();
+            result.NugetPackages.ShouldContain("./src/A.csproj");
+            result.DockerPackages.ShouldContain("./src/B/Dockerfile");
+            result.Benchmarks.ShouldBeEmpty();
         }
         finally
         {
@@ -55,8 +55,8 @@ public class ManifestAliasesTests
         {
             var result = _context.Object.LoadBuildManifest(tempFile);
 
-            result.Should().NotBeNull();
-            File.Exists(tempFile).Should().BeTrue("manifest file should be auto-created");
+            result.ShouldNotBeNull();
+            File.Exists(tempFile).ShouldBeTrue("manifest file should be auto-created");
         }
         finally
         {
@@ -86,7 +86,7 @@ public class ManifestAliasesTests
         {
             var result = _context.Object.LoadBuildManifest();
 
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
         finally
         {
