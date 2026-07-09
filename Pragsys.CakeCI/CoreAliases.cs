@@ -18,10 +18,10 @@ public static class CoreAliases
         var scriptDirectory = context.Environment.WorkingDirectory;
         var artifactsPath = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
 
-        var testProjects = System.IO.Directory.GetFiles(
-            "./",
-            "*.Tests.csproj",
-            System.IO.SearchOption.AllDirectories);
+        var testProjects = context.Globber
+            .Match("**/*.Tests.csproj")
+            .Select(p => p.FullPath)
+            .ToArray();
 
         foreach (var testProject in testProjects)
         {
@@ -95,10 +95,11 @@ public static class CoreAliases
         var scriptDirectory = context.Environment.WorkingDirectory;
         var artifactsFolder = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
 
-        var benchmarkProjects = System.IO.Directory.GetFiles(
-            "./",
-            "*.Benchmark.csproj",
-            System.IO.SearchOption.AllDirectories);
+        var benchmarkProjects = context.Globber
+            .Match("**/*.Benchmark.csproj")
+            .Select(p => p.FullPath)
+            .ToArray();
+
 
         foreach (var benchmarkProject in benchmarkProjects)
         {
