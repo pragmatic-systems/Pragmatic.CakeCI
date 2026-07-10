@@ -60,13 +60,11 @@ public static class SonarScanAliases
     [CakeAliasCategory("Sonar")]
     public static void CiSonarScannerBegin(this ICakeContext context, SonarArgs sonarArgs, string artifactsFolder, DirectoryPath? toolsDir = null)
     {
-        var scriptDirectory = context.Environment.WorkingDirectory;
-
         // Discover coverage report paths from test projects
-        var testProjects = System.IO.Directory.GetFiles(
-            scriptDirectory.FullPath,
-            "*.Tests.csproj",
-            System.IO.SearchOption.AllDirectories);
+        var testProjects = context.Globber
+            .Match("**/*.Tests.csproj")
+            .Select(p => p.FullPath)
+            .ToArray();
 
         var reports = testProjects
             .Select(s => System.IO.Path.GetFileNameWithoutExtension(s) + ".coverage.xml")
