@@ -88,3 +88,86 @@ public class NugetAliasesTests
         }
     }
 }
+
+
+public class CiArgumentAliasesTests
+{
+    private readonly Mock<ICakeContext> _context;
+    private readonly Mock<ICakeArguments> _cakeArguments;
+    private readonly Mock<ICakeEnvironment> _cakeEnvironment;
+
+    public CiArgumentAliasesTests()
+    {
+        _context = new Mock<ICakeContext>();
+        _cakeArguments = new Mock<ICakeArguments>();
+        _cakeEnvironment = new Mock<ICakeEnvironment>();
+
+        _context.Setup(c => c.Arguments).Returns(_cakeArguments.Object);
+        _context.Setup(c => c.Environment).Returns(_cakeEnvironment.Object);
+    }
+
+    [Fact]
+    public void Should_ConvertSimpleArg()
+    {
+        var key = "Key";
+        var value = "Value";
+
+        _cakeArguments
+            .Setup(a => a.GetArguments(key))
+            .Returns(new[] { value });
+
+        var result = _context.Object.CiArgument(key);
+        result.ShouldBe(value);
+    }
+
+
+    [Fact]
+    public void Should_ConvertSimpleEnv()
+    {
+        var key = "Key";
+        var value = "Value";
+
+        _cakeArguments
+            .Setup(a => a.GetArguments(key))
+            .Returns(new string[0]);
+
+        _cakeEnvironment
+            .Setup(a => a.GetEnvironmentVariable(key))
+            .Returns(value);
+
+        var result = _context.Object.CiArgument(key);
+        result.ShouldBe(value);
+    }
+
+    [Fact]
+    public void Should_ConvertGithubActionEnv()
+    {
+        var key = "Key";
+        var value = "Value";
+
+        _cakeArguments
+            .Setup(a => a.GetArguments(key))
+            .Returns(new string[0]);
+
+        _cakeEnvironment
+            .Setup(a => a.GetEnvironmentVariable($"INPUT_{key}".ToUpperInvariant()))
+            .Returns(value);
+
+        var result = _context.Object.CiArgument(key);
+        result.ShouldBe(value);
+    }
+
+    [Fact]
+    public void Should_ReturnDefaultWhenSupplied()
+    {
+        var key = "Key";
+        var value = "Value";
+
+        _cakeArguments
+            .Setup(a => a.GetArguments(key))
+            .Returns(new string[0]);
+
+        var result = _context.Object.CiArgument(key, value);
+        result.ShouldBe(value);
+    }
+}
