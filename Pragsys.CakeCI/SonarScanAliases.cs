@@ -18,7 +18,7 @@ public static class SonarScanAliases
     /// <param name="context">The Cake context.</param>
     /// <param name="toolsDir">Optional tools directory. Defaults to <c>./tools</c> relative to the working directory.</param>
     /// <returns>The full path to SonarScanner.MSBuild.dll.</returns>
-    private static string ResolveSonarScannerPath(ICakeContext context, DirectoryPath? toolsDir = null)
+    private static string ResolveSonarScannerPath(ICakeContext context)
     {
         var filePath = context.Globber
             .Match("**/SonarScanner.MSBuild.dll")
@@ -44,7 +44,7 @@ public static class SonarScanAliases
     /// <param name="toolsDir">Optional tools directory for the scanner. Defaults to <c>./tools</c>.</param>
     [CakeMethodAlias]
     [CakeAliasCategory("Sonar")]
-    public static void CiSonarScannerBegin(this ICakeContext context, SonarArgs sonarArgs, string artifactsFolder, DirectoryPath? toolsDir = null)
+    public static void CiSonarScannerBegin(this ICakeContext context, SonarArgs sonarArgs, string artifactsFolder)
     {
         // Discover coverage report paths from test projects
         var testProjects = context.Globber
@@ -60,7 +60,7 @@ public static class SonarScanAliases
         context.Log.Information($"Sonar coverage report paths: {reportPaths}");
 
         // Resolve scanner path
-        var scannerDll = ResolveSonarScannerPath(context, toolsDir);
+        var scannerDll = ResolveSonarScannerPath(context);
         context.Log.Information($"Using Sonar scanner DLL: {scannerDll}");
 
         // Run dotnet-sonarscanner begin
@@ -85,12 +85,11 @@ public static class SonarScanAliases
     /// </summary>
     /// <param name="context">The Cake context.</param>
     /// <param name="sonarArgs">The Sonar arguments configuration.</param>
-    /// <param name="toolsDir">Optional tools directory for the scanner. Defaults to <c>./tools</c>.</param>
     [CakeMethodAlias]
     [CakeAliasCategory("Sonar")]
-    public static void CiSonarScannerEnd(this ICakeContext context, SonarArgs sonarArgs, DirectoryPath? toolsDir = null)
+    public static void CiSonarScannerEnd(this ICakeContext context, SonarArgs sonarArgs)
     {
-        var scannerDll = ResolveSonarScannerPath(context, toolsDir);
+        var scannerDll = ResolveSonarScannerPath(context);
 
         var endArgs = new ProcessArgumentBuilder()
             .Append(scannerDll)
