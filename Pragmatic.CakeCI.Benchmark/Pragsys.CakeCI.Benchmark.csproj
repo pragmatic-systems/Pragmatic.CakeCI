@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Pragsys.CakeCI\Pragsys.CakeCI.csproj" />
+    <ProjectReference Include="..\Pragmatic.CakeCI\Pragmatic.CakeCI.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@ namespace Pragmatic.CakeCI;
 /// <summary>
 /// Aliases for core CI operations: test, lint, version resolution, and benchmarking.
 /// </summary>
-[CakeAliasCategory("PragsysCI")]
+[CakeAliasCategory("PragmaticCI")]
 public static class CoreAliases
 {
     [CakeMethodAlias]

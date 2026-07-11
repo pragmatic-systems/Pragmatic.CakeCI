@@ -1,6 +1,6 @@
 {
-  "NugetPackages": ["./Pragsys.CakeCI/Pragsys.CakeCI.csproj"],
+  "NugetPackages": ["./Pragmatic.CakeCI/Pragmatic.CakeCI.csproj"],
   "DockerPackages": ["./DockerTest/Dockerfile"],
-  "Benchmarks": ["./Pragsys.CakeCI.Benchmark/Pragsys.CakeCI.Benchmark.csproj"],
+  "Benchmarks": ["./Pragmatic.CakeCI.Benchmark/Pragmatic.CakeCI.Benchmark.csproj"],
   "ApiSpecs": {}
 }

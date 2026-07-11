@@ -8,7 +8,7 @@ namespace Pragmatic.CakeCI;
 /// <summary>
 /// Aliases for building and pushing Docker container images.
 /// </summary>
-[CakeAliasCategory("PragsysCI")]
+[CakeAliasCategory("PragmaticCI")]
 public static class DockerAliases
 {
     /// <summary>

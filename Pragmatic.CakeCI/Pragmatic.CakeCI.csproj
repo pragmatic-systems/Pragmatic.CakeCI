@@ -4,15 +4,15 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>Pragsys.CakeCI</PackageId>
+    <PackageId>Pragmatic.CakeCI</PackageId>
     <Version>0.1.0</Version>
-    <Authors>Pragsys</Authors>
-    <Description>Cake CI aliases for Pragsys build tooling</Description>
+    <Authors>Pragmatic</Authors>
+    <Description>Cake CI aliases for Pragmatic build tooling</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Pragsys.CakeCI.Tests" />
+    <InternalsVisibleTo Include="Pragmatic.CakeCI.Tests" />
   </ItemGroup>
 
   <ItemGroup>

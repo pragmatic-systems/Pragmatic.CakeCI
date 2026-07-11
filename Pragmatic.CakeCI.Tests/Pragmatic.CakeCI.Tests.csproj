@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Pragsys.CakeCI\Pragmatic.CakeCI.csproj" />
+    <ProjectReference Include="..\Pragmatic.CakeCI\Pragmatic.CakeCI.csproj" />
   </ItemGroup>
 
 </Project>

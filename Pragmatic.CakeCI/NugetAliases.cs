@@ -8,7 +8,7 @@ namespace Pragmatic.CakeCI;
 /// <summary>
 /// Aliases for NuGet package packing and pushing.
 /// </summary>
-[CakeAliasCategory("PragsysCI")]
+[CakeAliasCategory("PragmaticCI")]
 public static class NugetAliases
 {
     [CakeMethodAlias]

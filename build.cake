@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: We are dog-fooding our own CI tools here and using the local built package to run the CI pipe.
-#addin nuget:?package=Pragsys.CakeCI&version=0.1.0-dogfood
+#addin nuget:?package=Pragmatic.CakeCI&version=0.1.0-dogfood
 
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS

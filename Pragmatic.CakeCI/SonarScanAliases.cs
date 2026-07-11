@@ -8,7 +8,7 @@ namespace Pragmatic.CakeCI;
 /// <summary>
 /// Aliases for running SonarQube/SonarCloud code analysis scans.
 /// </summary>
-[CakeAliasCategory("PragsysCI")]
+[CakeAliasCategory("PragmaticCI")]
 public static class SonarScanAliases
 {
     /// <summary>

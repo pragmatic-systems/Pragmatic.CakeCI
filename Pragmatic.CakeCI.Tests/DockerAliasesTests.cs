@@ -2,7 +2,7 @@ using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Moq;
-using Pragsys.CakeCI;
+using Pragmatic.CakeCI;
 
 namespace Pragmatic.CakeCI.Tests;
 

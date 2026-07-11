@@ -5,7 +5,7 @@
 # Prepares the local dogfood environment by:
 #   1. Clearing the tools/Addins folder
 #   2. Clearing and re-creating the local-packages folder
-#   3. Building and packing Pragsys.CakeCI with version 0.1.0-dogfood
+#   3. Building and packing Pragmatic.CakeCI with version 0.1.0-dogfood
 #
 
 $ErrorActionPreference = "Stop"
@@ -13,11 +13,11 @@ $ErrorActionPreference = "Stop"
 $rootDir = Split-Path -Parent $PSScriptRoot
 $addinsDir = Join-Path $rootDir "tools/Addins"
 $localPackagesDir = Join-Path $rootDir "local-packages"
-$projectPath = Join-Path $rootDir "Pragsys.CakeCI/Pragsys.CakeCI.csproj"
+$projectPath = Join-Path $rootDir "Pragmatic.CakeCI/Pragmatic.CakeCI.csproj"
 $packageVersion = "0.1.0-dogfood"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Pragsys.CakeCI Dogfood Preparation" -ForegroundColor Cyan
+Write-Host "  Pragmatic.CakeCI Dogfood Preparation" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -49,8 +49,8 @@ New-Item -ItemType Directory -Path $localPackagesDir -Force | Out-Null
 Write-Host "  local-packages folder ready" -ForegroundColor Green
 Write-Host ""
 
-# Step 3: Build and pack Pragsys.CakeCI
-Write-Host "[3/3] Building and packing Pragsys.CakeCI v$packageVersion..." -ForegroundColor Yellow
+# Step 3: Build and pack Pragmatic.CakeCI
+Write-Host "[3/3] Building and packing Pragmatic.CakeCI v$packageVersion..." -ForegroundColor Yellow
 
 $packArgs = @(
     "pack",
@@ -71,10 +71,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Verify the package was created
-$expectedPackage = Join-Path $localPackagesDir "Pragsys.CakeCI.${packageVersion}.nupkg"
+$expectedPackage = Join-Path $localPackagesDir "Pragmatic.CakeCI.${packageVersion}.nupkg"
 if (Test-Path $expectedPackage) {
     $size = (Get-Item $expectedPackage).Length
-    Write-Host "  Package created: Pragsys.CakeCI.${packageVersion}.nupkg ($size bytes)" -ForegroundColor Green
+    Write-Host "  Package created: Pragmatic.CakeCI.${packageVersion}.nupkg ($size bytes)" -ForegroundColor Green
 } else {
     Write-Host "ERROR: Expected package not found at $expectedPackage" -ForegroundColor Red
     exit 1

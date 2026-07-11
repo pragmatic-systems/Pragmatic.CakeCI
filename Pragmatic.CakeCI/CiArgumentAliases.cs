@@ -6,7 +6,7 @@ namespace Pragmatic.CakeCI;
 /// <summary>
 /// Aliases for resolving CI arguments from command-line args with environment variable fallback.
 /// </summary>
-[CakeAliasCategory("PragsysCI")]
+[CakeAliasCategory("PragmaticCI")]
 public static class CiArgumentAliases
 {
     [CakeMethodAlias]

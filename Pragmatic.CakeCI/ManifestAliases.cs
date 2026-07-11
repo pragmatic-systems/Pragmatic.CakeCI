@@ -9,7 +9,7 @@ namespace Pragmatic.CakeCI;
 /// Aliases for loading and managing the build manifest (build.cakemix).
 /// Auto-creates a default manifest with discovered projects if the file does not exist.
 /// </summary>
-[CakeAliasCategory("PragsysCI")]
+[CakeAliasCategory("PragmaticCI")]
 public static class ManifestAliases
 {
     private const string DefaultManifestFile = "build.cakemix";

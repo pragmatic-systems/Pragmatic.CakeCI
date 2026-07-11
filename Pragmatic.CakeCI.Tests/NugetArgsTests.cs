@@ -1,4 +1,4 @@
-using Pragsys.CakeCI;
+using Pragmatic.CakeCI;
 using System;
 
 namespace Pragmatic.CakeCI.Tests;
