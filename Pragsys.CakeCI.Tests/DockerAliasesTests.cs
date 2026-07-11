@@ -2,8 +2,9 @@ using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Moq;
+using Pragsys.CakeCI;
 
-namespace Pragsys.CakeCI.Tests;
+namespace Pragmatic.CakeCI.Tests;
 
 public class DockerAliasesTests
 {

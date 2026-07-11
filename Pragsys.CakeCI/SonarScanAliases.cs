@@ -3,7 +3,7 @@ using Cake.Core.Annotations;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 
-namespace Pragsys.CakeCI;
+namespace Pragmatic.CakeCI;
 
 /// <summary>
 /// Aliases for running SonarQube/SonarCloud code analysis scans.

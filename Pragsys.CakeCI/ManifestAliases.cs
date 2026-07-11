@@ -3,7 +3,7 @@ using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.Diagnostics;
 
-namespace Pragsys.CakeCI;
+namespace Pragmatic.CakeCI;
 
 /// <summary>
 /// Aliases for loading and managing the build manifest (build.cakemix).

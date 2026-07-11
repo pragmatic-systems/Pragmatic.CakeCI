@@ -1,7 +1,7 @@
 using Cake.Core;
 using Moq;
 
-namespace Pragsys.CakeCI.Tests;
+namespace Pragmatic.CakeCI.Tests;
 
 public class ManifestAliasesTests
 {

@@ -1,6 +1,7 @@
+using Pragsys.CakeCI;
 using System;
 
-namespace Pragsys.CakeCI.Tests;
+namespace Pragmatic.CakeCI.Tests;
 
 public class ContainerArgsTests
 {

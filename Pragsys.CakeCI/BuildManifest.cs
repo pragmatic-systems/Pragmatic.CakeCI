@@ -1,4 +1,4 @@
-namespace Pragsys.CakeCI;
+namespace Pragmatic.CakeCI;
 
 /// <summary>
 /// Represents the build manifest loaded from (or auto-generated as) <c>build.cakemix</c>.

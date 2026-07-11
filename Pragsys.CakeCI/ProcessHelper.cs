@@ -2,7 +2,7 @@ using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 
-namespace Pragsys.CakeCI;
+namespace Pragmatic.CakeCI;
 
 /// <summary>
 /// Internal helper for executing external processes with consistent logging and error handling.

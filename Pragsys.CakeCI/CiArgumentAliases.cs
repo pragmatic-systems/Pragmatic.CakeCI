@@ -1,7 +1,7 @@
 using Cake.Core;
 using Cake.Core.Annotations;
 
-namespace Pragsys.CakeCI;
+namespace Pragmatic.CakeCI;
 
 /// <summary>
 /// Aliases for resolving CI arguments from command-line args with environment variable fallback.

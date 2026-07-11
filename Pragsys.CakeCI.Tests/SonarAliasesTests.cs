@@ -1,13 +1,9 @@
 ﻿using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Pragsys.CakeCI.Tests;
+namespace Pragmatic.CakeCI.Tests;
 
 public class SonarAliasesTests
 {

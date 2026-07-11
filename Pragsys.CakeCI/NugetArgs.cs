@@ -1,6 +1,6 @@
 using Cake.Core;
 
-namespace Pragsys.CakeCI;
+namespace Pragmatic.CakeCI;
 
 /// <summary>
 /// Holds NuGet publishing arguments resolved from CI context.

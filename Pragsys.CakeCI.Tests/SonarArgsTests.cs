@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Pragsys.CakeCI;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit.Sdk;
 
-namespace Pragsys.CakeCI.Tests;
+namespace Pragmatic.CakeCI.Tests;
 
 public class SonarArgsTests
 {

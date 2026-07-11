@@ -2,7 +2,7 @@ using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Moq;
 
-namespace Pragsys.CakeCI.Tests;
+namespace Pragmatic.CakeCI.Tests;
 
 public static class TestExtensions
 {
