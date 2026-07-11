@@ -1,0 +1,74 @@
+name: Build and Test Solution
+run-name: Build and Test Solution
+
+# Disable husky install on restore
+env:
+  HUSKY: '0'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  Build-And-Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # This is necessary so it does not conflict with git-version
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Make local-packages folder
+        shell: bash
+        run: mkdir ./local-packages
+
+        # Self publish our own cake tools to a local package feed so our build process will dog-food
+      - name: Pack Pragmatic.CakeCI to local-packages
+        shell: bash
+        run: dotnet pack Pragmatic.CakeCI/Pragmatic.CakeCI.csproj --configuration Release --output ./local-packages --version 0.1.0-dogfood
+
+      - name: Run cake step
+        uses: cake-build/cake-action@763b621ef69b317c1d6bde43a65f189c936b503b
+        with:
+          script-path: build.cake
+          target: BuildAndSonarScan
+          SonarOrg: ${{ vars.SONARORG }}
+          SonarToken: ${{ secrets.SONARTOKEN }}
+          SonarHostUrl: ${{ vars.SONARHOST }}
+          # NOTE: Free sonar so we're using "main" and a seperate build scan project for Main vs PR.
+          SonarProjectKey: ${{ github.event.pull_request && format('{0}-pr', secrets.SONAR_PROJ_KEY) || secrets.SONAR_PROJ_KEY }}
+          SonarProjectName: ${{ github.event.pull_request && format('{0}-PR', vars.SONAR_PROJ_NAME) || vars.SONAR_PROJ_NAME }}
+          SonarBranch: main 
+
+      - name: Publish Test Report with Pull Request Comment
+        uses: ctrf-io/github-test-reporter@0f299074936c32ccaab5be5230511f6b2b9080aa
+        if: ${{ !cancelled() }}       # run this step even if previous step failed
+        with:
+          report-path: './artifacts/*.ctrf'
+          pull-request-report: true
+          overwrite-comment: true
+          always-latest-comment: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}       # run this step even if previous step failed
+        with:
+          name: Artifacts
+          path: ./artifacts/

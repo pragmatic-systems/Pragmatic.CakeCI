@@ -350,6 +350,10 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
+# Local artifact folders
+/tools/
+/artifacts/
+
 # BeatPulse healthcheck temp database
 healthchecksdb
 

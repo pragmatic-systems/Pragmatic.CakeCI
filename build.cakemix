@@ -1,0 +1,6 @@
+{
+  "NugetPackages": ["./Pragmatic.CakeCI/Pragmatic.CakeCI.csproj"],
+  "DockerPackages": ["./DockerTest/Dockerfile"],
+  "Benchmarks": ["./Pragmatic.CakeCI.Benchmark/Pragmatic.CakeCI.Benchmark.csproj"],
+  "ApiSpecs": {}
+}
