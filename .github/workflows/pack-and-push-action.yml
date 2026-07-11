@@ -38,7 +38,7 @@ jobs:
           target: FullPackAndPush
           NugetSource: ${{ vars.PRIVATE_NUGET_SOURCE }}
           NugetApiKey: ${{ secrets.GITHUB_TOKEN }}
-          ContainerRegistry: ${{ secrets.PRIVATE_CONTAINER_REGISTRY }}
+          ContainerRegistry: ${{ vars.PRIVATE_CONTAINER_REGISTRY }}
           ContainerRegistryToken: ${{ secrets.GITHUB_TOKEN }}
           ContainerRegistryUserName: ${{ vars.PRIVATE_CONTAINER_REGISTRY_USERNAME }}
           SonarOrg: ${{ vars.SONARORG }}
