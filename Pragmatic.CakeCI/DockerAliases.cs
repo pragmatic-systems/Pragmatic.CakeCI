@@ -22,15 +22,14 @@ public static class DockerAliases
     {
         context.Log.Information($"Logging into container registry: {args.Registry}...");
 
-        var dockerArgs = new ProcessArgumentBuilder()
-            .Append("login")
-            .Append(args.Registry)
-            .Append("-u")
-            .Append(args.UserName)
-            .Append("-p")
-            .Append(args.Token);
+        // Use --password-stdin to avoid exposing the token in process arguments.
+        // This prevents the "WARNING! Using --password via the CLI is insecure" warning.
+        var shellCommand = $"printf '%s' '{args.Token}' | docker login {args.Registry} -u {args.UserName} --password-stdin";
 
-        ProcessHelper.Run(context, "docker", dockerArgs, $"Docker login failed for registry '{args.Registry}'");
+        var shellArgs = new ProcessArgumentBuilder()
+            .AppendSwitchQuoted("-c", shellCommand);
+
+        ProcessHelper.Run(context, "bash", shellArgs, $"Docker login failed for registry '{args.Registry}'");
         context.Log.Information("Docker login successful.");
     }
 
