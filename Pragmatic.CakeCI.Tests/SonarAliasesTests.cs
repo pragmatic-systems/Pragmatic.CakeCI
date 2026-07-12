@@ -48,7 +48,7 @@ public class SonarAliasesTests
             HostUrl = "localhost",
         };
         var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "SonarScanner.MSBuild.dll";
+        var sonarDll = "dotnet-sonarscanner";
 
         _globber
             .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))

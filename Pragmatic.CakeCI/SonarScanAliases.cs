@@ -20,18 +20,7 @@ public static class SonarScanAliases
     /// <returns>The full path to SonarScanner.MSBuild.dll.</returns>
     private static string ResolveSonarScannerPath(ICakeContext context)
     {
-        var filePath = context.Globber
-            .Match("**/SonarScanner.MSBuild.dll")
-            .Select(p => p.FullPath)
-            .SingleOrDefault();
-
-        if (filePath == null)
-        {
-            throw new CakeException($"SonarScanner.MSBuild.dll not found.");
-        }
-
-        context.Log.Information($"Using Sonar scanner from {filePath}");
-        return filePath;
+        return "dotnet-sonarscanner";
     }
 
     /// <summary>
