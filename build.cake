@@ -75,6 +75,7 @@ Task("BuildAndSonarScan")
 	.Does(() =>
 	{
 		sonarArgs.Validate();
+		CiLint();
 		CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		CiTest();
 		CiBenchmark();
@@ -85,8 +86,8 @@ Task("NugetPackAndPush")
 	.Does(() =>
 	{
 		nugetArgs.Validate();
-		versionNumber = CiVersion(versionNumber);
 		CiLint();
+		versionNumber = CiVersion(versionNumber);
 		CiTest();
 		CiBenchmark();
 		CiNugetPack(buildManifest, packagesFolder, versionNumber);
@@ -112,8 +113,8 @@ Task("FullPackAndPush")
 		nugetArgs.Validate();
 		containerArgs.Validate();
 		sonarArgs.Validate();
-		versionNumber = CiVersion(versionNumber);
 		CiLint();
+		versionNumber = CiVersion(versionNumber);
 		CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		CiTest();
 		CiBenchmark();

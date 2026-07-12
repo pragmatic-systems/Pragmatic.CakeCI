@@ -55,7 +55,7 @@ public class DockerAliasesTests
         var version = "0.0.1";
         var manifest = new BuildManifest
         {
-            DockerPackages = new [] { "Package" }
+            DockerPackages = new[] { "Package" }
         };
 
         var args = new ContainerArgs
