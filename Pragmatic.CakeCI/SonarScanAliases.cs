@@ -12,29 +12,6 @@ namespace Pragmatic.CakeCI;
 public static class SonarScanAliases
 {
     /// <summary>
-    /// Resolves the path to the SonarScanner.MSBuild.dll from the dotnet-sonarscanner package
-    /// installed via <c>#tool</c> in the tools directory.
-    /// </summary>
-    /// <param name="context">The Cake context.</param>
-    /// <param name="toolsDir">Optional tools directory. Defaults to <c>./tools</c> relative to the working directory.</param>
-    /// <returns>The full path to SonarScanner.MSBuild.dll.</returns>
-    private static string ResolveSonarScannerPath(ICakeContext context)
-    {
-        var filePath = context.Globber
-            .Match("**/SonarScanner.MSBuild.dll")
-            .Select(p => p.FullPath)
-            .SingleOrDefault();
-
-        if (filePath == null)
-        {
-            throw new CakeException($"SonarScanner.MSBuild.dll not found.");
-        }
-
-        context.Log.Information($"Using Sonar scanner from {filePath}");
-        return filePath;
-    }
-
-    /// <summary>
     /// Starts a SonarQube/SonarCloud analysis session by running <c>dotnet-sonarscanner begin</c>
     /// and building the solution.
     /// </summary>
@@ -59,13 +36,9 @@ public static class SonarScanAliases
         var reportPaths = string.Join(",", reports);
         context.Log.Information($"Sonar coverage report paths: {reportPaths}");
 
-        // Resolve scanner path
-        var scannerDll = ResolveSonarScannerPath(context);
-        context.Log.Information($"Using Sonar scanner DLL: {scannerDll}");
-
         // Run dotnet-sonarscanner begin
         var beginArgs = new ProcessArgumentBuilder()
-            .Append(scannerDll)
+            .Append("dotnet-sonarscanner")
             .Append("begin")
             .Append($"/key:{sonarArgs.ProjectKey}")
             .Append($"/name:{sonarArgs.ProjectName}")
@@ -89,10 +62,8 @@ public static class SonarScanAliases
     [CakeAliasCategory("Sonar")]
     public static void CiSonarScannerEnd(this ICakeContext context, SonarArgs sonarArgs)
     {
-        var scannerDll = ResolveSonarScannerPath(context);
-
         var endArgs = new ProcessArgumentBuilder()
-            .Append(scannerDll)
+            .Append("dotnet-sonarscanner")
             .Append("end")
             .Append($"/d:sonar.token={sonarArgs.Token}");
 
