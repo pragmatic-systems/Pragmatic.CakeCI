@@ -8,6 +8,12 @@ env:
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  packages: write
+
 jobs:
   Pack-And-Push:
     runs-on: ubuntu-latest
