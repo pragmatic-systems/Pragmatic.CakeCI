@@ -48,12 +48,6 @@ jobs:
         uses: cake-build/cake-action@763b621ef69b317c1d6bde43a65f189c936b503b
         with:
           script-path: build.cake
-          target: Version
-
-      - name: Run cake step
-        uses: cake-build/cake-action@763b621ef69b317c1d6bde43a65f189c936b503b
-        with:
-          script-path: build.cake
           target: BuildAndSonarScan
           SonarOrg: ${{ vars.SONARORG }}
           SonarToken: ${{ secrets.SONARTOKEN }}
