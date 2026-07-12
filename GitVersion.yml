@@ -1,0 +1,4 @@
+mode: mainline
+branches:
+  main:
+    increment: Patch
