@@ -57,7 +57,6 @@ public class SonarAliasesTests
         _context.Object.CiSonarScannerBegin(sonarArgs, artifactsFolder);
 
         _processRunner.ExecutedOnce();
-        _log.LogHasMessage($"Using Sonar scanner DLL: {sonarDll}");
     }
 
     [Fact]

@@ -26,14 +26,12 @@ jobs:
         shell: bash
         run: dotnet tool restore
 
-      - name: Make local-packages folder
-        shell: bash
-        run: mkdir ./local-packages
-
         # Self publish our own cake tools to a local package feed so our build process will dog-food
       - name: Pack Pragmatic.CakeCI to local-packages
         shell: bash
-        run: dotnet pack Pragmatic.CakeCI/Pragmatic.CakeCI.csproj --configuration Release --output ./local-packages --version 0.1.0-dogfood
+        run: |
+          mkdir -p ./local-packages
+          dotnet pack Pragmatic.CakeCI/Pragmatic.CakeCI.csproj --configuration Release --output ./local-packages --version 0.1.0-dogfood
 
       - name: Run cake step
         uses: cake-build/cake-action@763b621ef69b317c1d6bde43a65f189c936b503b
