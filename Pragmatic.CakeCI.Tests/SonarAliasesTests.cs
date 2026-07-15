@@ -1,7 +1,7 @@
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
-using Moq;
+using NSubstitute;
 
 namespace Pragmatic.CakeCI.Tests;
 
@@ -22,11 +22,10 @@ public class SonarAliasesTests : CakeContextTestBase
         var artifactsFolder = "./artifacts/packages";
         var proj = "C:\\temp\\sample.csproj";
 
-        Globber
-            .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
             .Returns(new[] { new FilePath(proj) });
 
-        Context.Object.CiSonarScannerBegin(sonarArgs, artifactsFolder);
+        Context.CiSonarScannerBegin(sonarArgs, artifactsFolder);
 
         ProcessRunner.ExecutedOnce();
     }
@@ -43,14 +42,11 @@ public class SonarAliasesTests : CakeContextTestBase
             ProjectKey = "Key",
             HostUrl = "localhost",
         };
-        var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "SonarScanner.MSBuild.dll";
 
-        Globber
-            .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
-            .Returns(new[] { new FilePath(sonarDll) });
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath("SonarScanner.MSBuild.dll") });
 
-        Context.Object.CiSonarScannerEnd(sonarArgs);
+        Context.CiSonarScannerEnd(sonarArgs);
 
         ProcessRunner.ExecutedOnce();
         Log.LogHasMessage("Sonar analysis completed successfully.");
@@ -68,20 +64,14 @@ public class SonarAliasesTests : CakeContextTestBase
             ProjectKey = "Key",
             HostUrl = "localhost",
         };
-        var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "SonarScanner.MSBuild.dll";
 
-        Globber
-            .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
-            .Returns(new[] { new FilePath(sonarDll) });
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath("SonarScanner.MSBuild.dll") });
 
-
-        Process
-            .Setup(pr => pr.GetExitCode())
-            .Returns(1);
+        Process.GetExitCode().Returns(1);
 
         Should
-            .Throw<CakeException>(() => Context.Object.CiSonarScannerEnd(sonarArgs))
+            .Throw<CakeException>(() => Context.CiSonarScannerEnd(sonarArgs))
             .Message.ShouldBe("Sonar analysis failed. (exit code 1)");
 
         ProcessRunner.ExecutedOnce();

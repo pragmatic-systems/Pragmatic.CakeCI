@@ -1,14 +1,13 @@
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
-using Moq;
+using NSubstitute;
 using Pragmatic.CakeCI;
 
 namespace Pragmatic.CakeCI.Tests;
 
 public class DockerAliasesTests : CakeContextTestBase
-    {
-
+{
     [Fact]
     public void CiDocker_WhenDockerLoginSucceeds_LogsSuccess()
     {
@@ -18,7 +17,7 @@ public class DockerAliasesTests : CakeContextTestBase
             Token = "token",
             UserName = "user",
         };
-        Context.Object.CiDockerLogin(args);
+        Context.CiDockerLogin(args);
         Log.LogHasMessage("Docker login successful.");
     }
 
@@ -40,7 +39,7 @@ public class DockerAliasesTests : CakeContextTestBase
 
         var tag = $"{args.Registry}/default-image:{version}";
 
-        Context.Object.CiDockerBuild(manifest, args, version);
+        Context.CiDockerBuild(manifest, args, version);
         Log.LogHasMessage($"Docker image built successfully: {tag}");
     }
 
@@ -62,7 +61,7 @@ public class DockerAliasesTests : CakeContextTestBase
 
         var tag = $"{args.Registry}/default-image:{version}";
 
-        Context.Object.CiDockerPush(manifest, args, version);
+        Context.CiDockerPush(manifest, args, version);
         Log.LogHasMessage($"Docker image pushed successfully: {tag}");
     }
 
@@ -108,8 +107,6 @@ public class DockerAliasesTests : CakeContextTestBase
     [InlineData("a/b/c/DeepService/Dockerfile", "deepservice")]
     public void PathSeparators_ForwardSlash_ShouldExtractDirectoryName(string dockerfilePath, string expectedName)
     {
-        // Verify that Path.GetFileName(GetDirectoryName(...)) correctly handles
-        // forward-slash paths regardless of platform (the fix for the separator issue).
         var directoryName = System.IO.Path.GetDirectoryName(dockerfilePath);
         var packageName = System.IO.Path.GetFileName(directoryName!).ToLowerInvariant();
 
@@ -119,7 +116,6 @@ public class DockerAliasesTests : CakeContextTestBase
     [Fact]
     public void PathSeparators_Backslash_ShouldExtractDirectoryName()
     {
-        // On Windows the paths may use backslashes; the fix must handle those too.
         var dockerfilePath = System.IO.Path.Combine("src", "MyApp", "Dockerfile");
         var directoryName = System.IO.Path.GetDirectoryName(dockerfilePath);
         var packageName = System.IO.Path.GetFileName(directoryName!).ToLowerInvariant();

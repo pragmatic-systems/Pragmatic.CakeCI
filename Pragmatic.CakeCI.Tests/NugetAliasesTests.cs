@@ -1,13 +1,12 @@
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
-using Moq;
+using NSubstitute;
 
 namespace Pragmatic.CakeCI.Tests;
 
 public class NugetAliasesTests : CakeContextTestBase
-    {
-
+{
     [Fact]
     public void CiNugetPack_WithSinglePackage_RunsPackCommand()
     {
@@ -18,11 +17,11 @@ public class NugetAliasesTests : CakeContextTestBase
         var packagesFolder = "./artifacts/packages";
         var version = "1.0.0";
 
-        Process.Setup(p => p.GetExitCode()).Returns(0);
-        Process.Setup(p => p.GetStandardOutput()).Returns([]);
-        Process.Setup(p => p.GetStandardError()).Returns([]);
+        Process.GetExitCode().Returns(0);
+        Process.GetStandardOutput().Returns([]);
+        Process.GetStandardError().Returns([]);
 
-        Context.Object.CiNugetPack(manifest, packagesFolder, version);
+        Context.CiNugetPack(manifest, packagesFolder, version);
 
         ProcessRunner.ExecutedOnce();
         Log.LogHasMessage($"Packing {manifest.NugetPackages[0]}...");
@@ -44,15 +43,13 @@ public class NugetAliasesTests : CakeContextTestBase
                 ApiKey = "my-api-key",
             };
 
-            Process.Setup(p => p.GetExitCode()).Returns(0);
-            Process.Setup(p => p.GetStandardOutput()).Returns([]);
-            Process.Setup(p => p.GetStandardError()).Returns([]);
+            Process.GetExitCode().Returns(0);
+            Process.GetStandardOutput().Returns([]);
+            Process.GetStandardError().Returns([]);
 
-            Context.Object.CiNugetPush(args, tempDir);
+            Context.CiNugetPush(args, tempDir);
 
-            ProcessRunner.Verify(
-                pr => pr.Start(It.IsAny<FilePath>(), It.IsAny<ProcessSettings>()),
-                Times.Exactly(2));
+            ProcessRunner.Received(2).Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>());
         }
         finally
         {
@@ -62,21 +59,20 @@ public class NugetAliasesTests : CakeContextTestBase
     }
 }
 
-
 public class CiArgumentAliasesTests
 {
-    private readonly Mock<ICakeContext> _context;
-    private readonly Mock<ICakeArguments> _cakeArguments;
-    private readonly Mock<ICakeEnvironment> _cakeEnvironment;
+    private readonly ICakeContext _context;
+    private readonly ICakeArguments _cakeArguments;
+    private readonly ICakeEnvironment _cakeEnvironment;
 
     public CiArgumentAliasesTests()
     {
-        _context = new Mock<ICakeContext>();
-        _cakeArguments = new Mock<ICakeArguments>();
-        _cakeEnvironment = new Mock<ICakeEnvironment>();
+        _context = Substitute.For<ICakeContext>();
+        _cakeArguments = Substitute.For<ICakeArguments>();
+        _cakeEnvironment = Substitute.For<ICakeEnvironment>();
 
-        _context.Setup(c => c.Arguments).Returns(_cakeArguments.Object);
-        _context.Setup(c => c.Environment).Returns(_cakeEnvironment.Object);
+        _context.Arguments.Returns(_cakeArguments);
+        _context.Environment.Returns(_cakeEnvironment);
     }
 
     [Fact]
@@ -85,11 +81,9 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments
-            .Setup(a => a.GetArguments(key))
-            .Returns(new[] { value });
+        _cakeArguments.GetArguments(key).Returns(new[] { value });
 
-        var result = _context.Object.CiArgument(key);
+        var result = _context.CiArgument(key);
         result.ShouldBe(value);
     }
 
@@ -99,15 +93,10 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments
-            .Setup(a => a.GetArguments(key))
-            .Returns(new string[0]);
+        _cakeArguments.GetArguments(key).Returns(new string[0]);
+        _cakeEnvironment.GetEnvironmentVariable(key).Returns(value);
 
-        _cakeEnvironment
-            .Setup(a => a.GetEnvironmentVariable(key))
-            .Returns(value);
-
-        var result = _context.Object.CiArgument(key);
+        var result = _context.CiArgument(key);
         result.ShouldBe(value);
     }
 
@@ -117,15 +106,10 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments
-            .Setup(a => a.GetArguments(key))
-            .Returns(new string[0]);
+        _cakeArguments.GetArguments(key).Returns(new string[0]);
+        _cakeEnvironment.GetEnvironmentVariable($"INPUT_{key}".ToUpperInvariant()).Returns(value);
 
-        _cakeEnvironment
-            .Setup(a => a.GetEnvironmentVariable($"INPUT_{key}".ToUpperInvariant()))
-            .Returns(value);
-
-        var result = _context.Object.CiArgument(key);
+        var result = _context.CiArgument(key);
         result.ShouldBe(value);
     }
 
@@ -135,11 +119,9 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments
-            .Setup(a => a.GetArguments(key))
-            .Returns(new string[0]);
+        _cakeArguments.GetArguments(key).Returns(new string[0]);
 
-        var result = _context.Object.CiArgument(key, value);
+        var result = _context.CiArgument(key, value);
         result.ShouldBe(value);
     }
 }
