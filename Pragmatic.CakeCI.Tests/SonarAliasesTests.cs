@@ -48,11 +48,11 @@ public class SonarAliasesTests
             HostUrl = "localhost",
         };
         var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "dotnet-sonarscanner";
+        var proj = "C:\\temp\\sample.csproj";
 
         _globber
             .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
-            .Returns(new[] { new FilePath(sonarDll) });
+            .Returns(new[] { new FilePath(proj) });
 
         _context.Object.CiSonarScannerBegin(sonarArgs, artifactsFolder);
 
