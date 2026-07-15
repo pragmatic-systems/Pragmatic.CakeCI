@@ -6,35 +6,8 @@ using Pragmatic.CakeCI;
 
 namespace Pragmatic.CakeCI.Tests;
 
-public class DockerAliasesTests
-{
-    private readonly Mock<ICakeContext> _context;
-    private readonly Mock<ICakeLog> _log;
-    private readonly Mock<ICakeEnvironment> _environment;
-    private readonly Mock<IProcessRunner> _processRunner;
-    private readonly Mock<IProcess> _process;
-    private readonly Mock<IGlobber> _globber;
-
-    public DockerAliasesTests()
+public class DockerAliasesTests : CakeContextTestBase
     {
-        _context = new Mock<ICakeContext>();
-        _log = new Mock<ICakeLog>();
-        _environment = new Mock<ICakeEnvironment>();
-        _processRunner = new Mock<IProcessRunner>();
-        _process = new Mock<IProcess>();
-        _globber = new Mock<IGlobber>();
-
-        _processRunner
-            .Setup(pr => pr.Start(It.IsAny<FilePath>(), It.IsAny<ProcessSettings>()))
-            .Returns(_process.Object);
-
-        _environment.Setup(e => e.WorkingDirectory).Returns(new DirectoryPath("."));
-
-        _context.Setup(c => c.Log).Returns(_log.Object);
-        _context.Setup(c => c.ProcessRunner).Returns(_processRunner.Object);
-        _context.Setup(c => c.Environment).Returns(_environment.Object);
-        _context.Setup(c => c.Globber).Returns(_globber.Object);
-    }
 
     [Fact]
     public void CiDocker_WhenDockerLoginSucceeds_LogsSuccess()
@@ -45,8 +18,8 @@ public class DockerAliasesTests
             Token = "token",
             UserName = "user",
         };
-        _context.Object.CiDockerLogin(args);
-        _log.LogHasMessage("Docker login successful.");
+        Context.Object.CiDockerLogin(args);
+        Log.LogHasMessage("Docker login successful.");
     }
 
     [Fact]
@@ -67,8 +40,8 @@ public class DockerAliasesTests
 
         var tag = $"{args.Registry}/default-image:{version}";
 
-        _context.Object.CiDockerBuild(manifest, args, version);
-        _log.LogHasMessage($"Docker image built successfully: {tag}");
+        Context.Object.CiDockerBuild(manifest, args, version);
+        Log.LogHasMessage($"Docker image built successfully: {tag}");
     }
 
     [Fact]
@@ -89,8 +62,8 @@ public class DockerAliasesTests
 
         var tag = $"{args.Registry}/default-image:{version}";
 
-        _context.Object.CiDockerPush(manifest, args, version);
-        _log.LogHasMessage($"Docker image pushed successfully: {tag}");
+        Context.Object.CiDockerPush(manifest, args, version);
+        Log.LogHasMessage($"Docker image pushed successfully: {tag}");
     }
 
     [Theory]
