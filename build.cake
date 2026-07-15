@@ -65,6 +65,25 @@ Teardown(context =>
 Task("__Version")
 	.Does(() => versionNumber = CiVersion(versionNumber));
 
+Task("__LintCheck")
+	.Does(() => CiLint());
+
+Task("__ValidateSonarArgs")
+	.Does(() => sonarArgs.Validate());
+
+Task("__ValidateNugetArgs")
+	.Does(() => nugetArgs.Validate());
+
+Task("__ValidateDockerArgs")
+	.Does(() => containerArgs.Validate());
+
+Task("__BeginSonarScan")
+	.IsDependentOn("__ValidateSonarArgs")
+	.Does(() => CiSonarScannerBegin(sonarArgs, artifactsFolder));
+
+///////////////////////////////////////////////////////////////////////////////
+// Public Tasks
+///////////////////////////////////////////////////////////////////////////////
 Task("BuildAndTest")
 	.Does(() => CiTest());
 
@@ -72,22 +91,22 @@ Task("BuildAndBenchmark")
 	.Does(() => CiBenchmark());
 
 Task("BuildAndSonarScan")
+	.IsDependentOn("__LintCheck")
+	.IsDependentOn("__ValidateSonarArgs")
+	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
-		sonarArgs.Validate();
-		CiLint();
-		CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		CiTest();
 		CiBenchmark();
 		CiSonarScannerEnd(sonarArgs);
 	});
 
 Task("NugetPackAndPush")
+	.IsDependentOn("__LintCheck")
+	.IsDependentOn("__ValidateNugetArgs")
+	.IsDependentOn("__Version")
 	.Does(() =>
 	{
-		nugetArgs.Validate();
-		CiLint();
-		versionNumber = CiVersion(versionNumber);
 		CiTest();
 		CiBenchmark();
 		CiNugetPack(buildManifest, packagesFolder, versionNumber);
@@ -95,11 +114,11 @@ Task("NugetPackAndPush")
 	});
 
 Task("DockerPackAndPush")
+	.IsDependentOn("__LintCheck")
+	.IsDependentOn("__ValidateDockerArgs")
+	.IsDependentOn("__Version")
 	.Does(() =>
 	{
-		containerArgs.Validate();
-		versionNumber = CiVersion(versionNumber);
-		CiLint();
 		CiTest();
 		CiBenchmark();
 		CiDockerLogin(containerArgs);
@@ -108,14 +127,13 @@ Task("DockerPackAndPush")
 	});
 
 Task("FullPackAndPush")
+	.IsDependentOn("__LintCheck")
+	.IsDependentOn("__ValidateNugetArgs")
+	.IsDependentOn("__ValidateDockerArgs")
+	.IsDependentOn("__Version")
+	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
-		nugetArgs.Validate();
-		containerArgs.Validate();
-		sonarArgs.Validate();
-		CiLint();
-		versionNumber = CiVersion(versionNumber);
-		CiSonarScannerBegin(sonarArgs, artifactsFolder);
 		CiTest();
 		CiBenchmark();
 		CiNugetPack(buildManifest, packagesFolder, versionNumber);
