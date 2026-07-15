@@ -37,7 +37,7 @@ public class DockerAliasesTests
     }
 
     [Fact]
-    public void CiLint_WhenDockerLoginSucceeds_LogsSuccess()
+    public void CiDocker_WhenDockerLoginSucceeds_LogsSuccess()
     {
         var args = new ContainerArgs
         {
@@ -50,7 +50,7 @@ public class DockerAliasesTests
     }
 
     [Fact]
-    public void CiLint_WhenDockerBuildSucceeds_LogsSuccess()
+    public void CiDocker_WhenDockerBuildSucceeds_LogsSuccess()
     {
         var version = "0.0.1";
         var manifest = new BuildManifest
@@ -72,7 +72,7 @@ public class DockerAliasesTests
     }
 
     [Fact]
-    public void CiLint_WhenDockerPushSucceeds_LogsSuccess()
+    public void CiDocker_WhenDockerPushSucceeds_LogsSuccess()
     {
         var version = "0.0.1";
         var manifest = new BuildManifest
