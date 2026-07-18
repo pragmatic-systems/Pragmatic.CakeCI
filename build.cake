@@ -11,7 +11,6 @@
 
 var cakeMixFile = CiArgument("cakemix", "build.cakemix");
 var target = CiArgument("target", "Default");
-var configuration = CiArgument("configuration", "Release");
 var versionNumber = CiArgument("VersionOverride");
 
 BuildManifest buildManifest;
