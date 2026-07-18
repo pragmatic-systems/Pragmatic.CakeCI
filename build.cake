@@ -107,11 +107,20 @@ Task("NugetPackAndPush")
 	.IsDependentOn("__LintCheck")
 	.IsDependentOn("__ValidateNugetArgs")
 	.IsDependentOn("__Version")
+	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
-		CiTest();
-		CiBenchmark();
-		CiNugetPack(buildManifest, packagesFolder, versionNumber);
+		try
+		{
+			CiTest();
+			CiBenchmark();
+			CiNugetPack(buildManifest, packagesFolder, versionNumber);
+		}
+		finally
+		{
+			CiSonarScannerEnd(sonarArgs);
+		}
+
 		CiNugetPush(nugetArgs, packagesFolder);
 	});
 
@@ -119,12 +128,20 @@ Task("DockerPackAndPush")
 	.IsDependentOn("__LintCheck")
 	.IsDependentOn("__ValidateDockerArgs")
 	.IsDependentOn("__Version")
+	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
-		CiTest();
-		CiBenchmark();
-		CiDockerBuild(buildManifest, containerArgs, versionNumber);
-		
+		try
+		{
+			CiTest();
+			CiBenchmark();
+			CiDockerBuild(buildManifest, containerArgs, versionNumber);
+		}
+		finally
+		{
+			CiSonarScannerEnd(sonarArgs);
+		}
+
 		try
 		{
 			CiDockerLogin(containerArgs);
