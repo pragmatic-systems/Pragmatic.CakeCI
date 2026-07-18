@@ -1,8 +1,6 @@
 # CakeTools
 Cake tools for build, test, benchmark, sonar scan and various pack/push operations.
 
-## Sonar
-
 ## Why Cake?
 Github Actions are closed source and proprietary - If they are unavailable and you rely on them for CI, you can't build, test, publish your application. 
 
