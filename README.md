@@ -13,6 +13,8 @@ This build.cake file uses a `.cakemix` configuration file to determine what to p
 
 This project targets the Microsoft Testing Platform test runner, and assumes that the benchmark project is an executable that runs BenchmarkRunner.
 
+## Build Status
+
 [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
 
