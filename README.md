@@ -1,6 +1,8 @@
 # CakeTools
 Cake tools for build, test, benchmark, sonar scan and various pack/push operations.
 
+## Sonar
+
 ## Why Cake?
 Github Actions are closed source and proprietary - If they are unavailable and you rely on them for CI, you can't build, test, publish your application. 
 
@@ -10,6 +12,18 @@ Because of that I've opted for Cake which can be run both locally via cmd, via G
 This build.cake file uses a `.cakemix` configuration file to determine what to pack, test, benchmark etc. It will create an initial version when first run in a project that will make a best guess default setup.
 
 This project targets the Microsoft Testing Platform test runner, and assumes that the benchmark project is an executable that runs BenchmarkRunner.
+
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=bugs)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=pragmatic-systems_Pragsys.CakeCI&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=pragmatic-systems_Pragsys.CakeCI)
 
 ## Cakemix Sample Schema
 
@@ -45,6 +59,8 @@ Use `/` for folder seperators as this works on both Windows and Linux.
 
 ## Dogfood Build
 This project dogfoods its own `Pragmatic.CakeCI` package. Before running the build script, prepare the local environment by rebuilding and repacking the project:
+
+IMPORTANT - Always read and review un-trusted scripts before execution.
 
 ```bash
 pwsh -ExecutionPolicy Bypass -File scripts/prepare-dogfood.ps1
