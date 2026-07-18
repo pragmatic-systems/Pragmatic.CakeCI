@@ -94,6 +94,25 @@ public static class DockerAliases
     }
 
     /// <summary>
+    /// Logs out of a container registry.
+    /// </summary>
+    /// <param name="context">The Cake context.</param>
+    /// <param name="args">The container registry arguments.</param>
+    [CakeMethodAlias]
+    [CakeAliasCategory("Docker")]
+    public static void CiDockerLogout(this ICakeContext context, ContainerArgs args)
+    {
+        context.Log.Information($"Logging out of container registry: {args.Registry}...");
+
+        var dockerArgs = new ProcessArgumentBuilder()
+            .Append("logout")
+            .Append(args.Registry);
+
+        ProcessHelper.Run(context, "docker", dockerArgs, $"Docker logout failed for registry '{args.Registry}'");
+        context.Log.Information("Docker logout successful.");
+    }
+
+    /// <summary>
     /// Extracts a package name from a Dockerfile path by taking the parent directory name.
     /// </summary>
     private static string GetDockerPackageName(ICakeContext context, string dockerfilePath)

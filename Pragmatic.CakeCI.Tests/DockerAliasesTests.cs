@@ -44,6 +44,19 @@ public class DockerAliasesTests : CakeContextTestBase
     }
 
     [Fact]
+    public void CiDocker_WhenDockerLogoutSucceeds_LogsSuccess()
+    {
+        var args = new ContainerArgs
+        {
+            Registry = "ghcr.io/myorg",
+            Token = "token",
+            UserName = "user",
+        };
+        Context.CiDockerLogout(args);
+        Log.LogHasMessage("Docker logout successful.");
+    }
+
+    [Fact]
     public void CiDocker_WhenDockerPushSucceeds_LogsSuccess()
     {
         var version = "0.0.1";

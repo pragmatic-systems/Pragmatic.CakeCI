@@ -40,8 +40,6 @@ var sonarArgs = new SonarArgs
 // Artifact Folders
 var artifactsFolder = "./artifacts";
 var packagesFolder = System.IO.Path.Combine(artifactsFolder, "packages");
-var swaggerFolder = System.IO.Path.Combine(artifactsFolder, "swagger");
-var postmanFolder = System.IO.Path.Combine(artifactsFolder, "postman");
 
 // Setup / Teardown
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,9 +93,15 @@ Task("BuildAndSonarScan")
 	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
-		CiTest();
-		CiBenchmark();
-		CiSonarScannerEnd(sonarArgs);
+		try
+		{
+			CiTest();
+			CiBenchmark();
+		}
+		finally
+		{
+			CiSonarScannerEnd(sonarArgs);
+		}
 	});
 
 Task("NugetPackAndPush")
@@ -120,9 +124,17 @@ Task("DockerPackAndPush")
 	{
 		CiTest();
 		CiBenchmark();
-		CiDockerLogin(containerArgs);
 		CiDockerBuild(buildManifest, containerArgs, versionNumber);
-		CiDockerPush(buildManifest, containerArgs, versionNumber);
+		
+		try
+		{
+			CiDockerLogin(containerArgs);
+			CiDockerPush(buildManifest, containerArgs, versionNumber);
+		}
+		finally
+		{
+			CiDockerLogout(containerArgs);
+		}
 	});
 
 Task("FullPackAndPush")
@@ -133,14 +145,28 @@ Task("FullPackAndPush")
 	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
-		CiTest();
-		CiBenchmark();
-		CiNugetPack(buildManifest, packagesFolder, versionNumber);
-		CiDockerLogin(containerArgs);
-		CiDockerBuild(buildManifest, containerArgs, versionNumber);
-		CiSonarScannerEnd(sonarArgs);
-		CiNugetPush(nugetArgs, packagesFolder);
-		CiDockerPush(buildManifest, containerArgs, versionNumber);
+		try
+		{
+			CiTest();
+			CiBenchmark();
+			CiNugetPack(buildManifest, packagesFolder, versionNumber);
+			CiDockerBuild(buildManifest, containerArgs, versionNumber);
+		}
+		finally
+		{
+			CiSonarScannerEnd(sonarArgs);
+		}
+		
+		try
+		{
+			CiDockerLogin(containerArgs);
+			CiDockerPush(buildManifest, containerArgs, versionNumber);
+			CiNugetPush(nugetArgs, packagesFolder);
+		}
+		finally
+		{
+			CiDockerLogout(containerArgs);
+		}
 	});
 
 Task("Default")
