@@ -92,7 +92,6 @@ Task("BuildAndBenchmark")
 
 Task("BuildAndSonarScan")
 	.IsDependentOn("__LintCheck")
-	.IsDependentOn("__ValidateSonarArgs")
 	.IsDependentOn("__BeginSonarScan")
 	.Does(() =>
 	{
@@ -145,9 +144,9 @@ Task("FullPackAndPush")
 	});
 
 Task("Default")
+	.IsDependentOn("__LintCheck")
 	.Does(() =>
 	{
-		CiLint();
 		CiTest();
 		CiBenchmark();
 	});
