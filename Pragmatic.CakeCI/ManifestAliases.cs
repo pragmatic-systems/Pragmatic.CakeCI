@@ -31,7 +31,7 @@ public static class ManifestAliases
         if (!System.IO.File.Exists(file))
         {
             context.Log.Warning($"No cakemix file found at '{file}', creating default manifest...");
-            var manifest = CreateDefaultManifest(context);
+            var manifest = CreateDefaultManifest();
             var json = JsonSerializer.Serialize(manifest, JsonOptions);
             File.WriteAllText(file, json);
             return manifest;
@@ -42,7 +42,7 @@ public static class ManifestAliases
             ?? throw new InvalidOperationException($"Failed to deserialize build manifest from '{file}'.");
     }
 
-    private static BuildManifest CreateDefaultManifest(ICakeContext context)
+    private static BuildManifest CreateDefaultManifest()
     {
         return new BuildManifest
         {

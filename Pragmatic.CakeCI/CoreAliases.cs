@@ -11,6 +11,8 @@ namespace Pragmatic.CakeCI;
 [CakeAliasCategory("PragmaticCI")]
 public static class CoreAliases
 {
+    private const string DotnetExe = "dotnet";
+
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
     public static void CiTest(this ICakeContext context)
@@ -34,7 +36,7 @@ public static class CoreAliases
                 .Append("--")
                 .AppendQuoted($"--results-directory {artifactsPath} --report-ctrf --coverage --coverage-output '{projectName}.coverage.xml' --coverage-output-format xml");
 
-            ProcessHelper.Run(context, "dotnet", args, $"Tests failed for {projectName}");
+            ProcessHelper.Run(context, DotnetExe, args, $"Tests failed for {projectName}");
             context.Log.Information($"{projectName} tests passed");
         }
     }
@@ -49,7 +51,7 @@ public static class CoreAliases
             .Append("format")
             .Append("--verify-no-changes");
 
-        ProcessHelper.Run(context, "dotnet", args, "Lint check failed: code formatting violations detected. Run `dotnet format`");
+        ProcessHelper.Run(context, DotnetExe, args, "Lint check failed: code formatting violations detected. Run `dotnet format`");
         context.Log.Information("Lint check passed – no formatting changes required.");
     }
 
@@ -66,7 +68,7 @@ public static class CoreAliases
         context.Log.Information("Resolving version from GitVersion...");
 
         var args = new ProcessArgumentBuilder().Append("gitversion");
-        var output = ProcessHelper.Run(context, "dotnet", args, "GitVersion failed")
+        var output = ProcessHelper.Run(context, DotnetExe, args, "GitVersion failed")
             ?? throw new CakeException("GitVersion returned no output.");
 
         try
@@ -100,7 +102,6 @@ public static class CoreAliases
             .Select(p => p.FullPath)
             .ToArray();
 
-
         foreach (var benchmarkProject in benchmarkProjects)
         {
             var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmarkProject);
@@ -115,7 +116,7 @@ public static class CoreAliases
                 .Append("--artifacts")
                 .AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
 
-            ProcessHelper.Run(context, "dotnet", args, $"Benchmark failed: {benchName}");
+            ProcessHelper.Run(context, DotnetExe, args, $"Benchmark failed: {benchName}");
         }
     }
 }

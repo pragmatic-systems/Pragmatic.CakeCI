@@ -37,7 +37,7 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments.GetArguments(key).Returns(new string[0]);
+        _cakeArguments.GetArguments(key).Returns(Array.Empty<string>());
         _cakeEnvironment.GetEnvironmentVariable(key).Returns(value);
 
         var result = _context.CiArgument(key);
@@ -50,7 +50,7 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments.GetArguments(key).Returns(new string[0]);
+        _cakeArguments.GetArguments(key).Returns(Array.Empty<string>());
         _cakeEnvironment.GetEnvironmentVariable($"INPUT_{key}".ToUpperInvariant()).Returns(value);
 
         var result = _context.CiArgument(key);
