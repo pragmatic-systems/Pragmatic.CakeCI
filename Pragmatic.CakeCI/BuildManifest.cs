@@ -19,9 +19,4 @@ public class BuildManifest
     /// Paths to benchmark projects (*.Benchmark.csproj).
     /// </summary>
     public string[] Benchmarks { get; set; } = [];
-
-    /// <summary>
-    /// API specification mappings (project name to base URL).
-    /// </summary>
-    public Dictionary<string, string> ApiSpecs { get; set; } = [];
 }

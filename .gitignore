@@ -353,6 +353,7 @@ ASALocalRun/
 # Local artifact folders
 /tools/
 /artifacts/
+/local-packages/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
