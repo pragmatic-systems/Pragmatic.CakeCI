@@ -1,4 +1,4 @@
 mode: mainline
 branches:
   main:
-    increment: Patch
+    increment: None
