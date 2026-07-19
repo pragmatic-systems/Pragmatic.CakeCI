@@ -102,6 +102,8 @@ dotnet cake build.cake
 
 That's it — test projects (`*.Tests.csproj`) and benchmark projects (`*.Benchmark.csproj`) are **auto-discovered**. No manifest needed for basic usage.
 
+For a full `build.cake` sample, you can use the one that drives this repo [here](https://github.com/pragmatic-systems/Pragmatic.CakeCI/blob/main/build.cake).
+
 ---
 
 ## Overview
@@ -206,19 +208,26 @@ dotnet cake build.cake \
 
 ## Versioning
 
-Pragmatic.CakeCI uses [GitVersion](https://gitversion.net/) in **mainline mode**. The version is determined from your git history — no manual bumps needed. Configure it via `GitVersion.yml` at the repo root:
+Pragmatic.CakeCI uses [GitVersion](https://gitversion.net/) in **mainline mode** with **tag-driven versioning**. The version is taken directly from your git tags — no auto-increment.
 
-```yaml
-mode: mainline
-branches:
-  main:
-    increment: Patch
+### Default Configuration
+
+The version is **exactly what you tag**:
+
+```bash
+git tag 1.0.0          # version is 1.0.0
+git tag 1.1.0          # version is 1.1.0
+git tag 1.5.0          # version is 1.5.0
 ```
 
-Override the version at runtime:
+Version resolution only runs during packaging tasks (`NugetPackAndPush`, `DockerPackAndPush`, `FullPackAndPush`). Local builds and tests never invoke it.
 
-```csharp
-var version = CiVersion("1.2.3-custom");
+### Override the Version at Runtime
+
+Pass `--VersionOverride` to skip GitVersion entirely:
+
+```bash
+dotnet cake build.cake /VersionOverride=1.2.3-custom
 ```
 
 ---
