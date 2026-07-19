@@ -6,8 +6,13 @@
     <Nullable>enable</Nullable>
     <PackageId>Pragmatic.CakeCI</PackageId>
     <Authors>Pragmatic</Authors>
-    <Description>Cake CI aliases for Pragmatic build tooling</Description>
+    <Description>Cake CI aliases for building, testing, benchmarking, linting, and publishing .NET projects via NuGet and Docker.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/pragmatic-systems/Pragmatic.CakeCI</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/pragmatic-systems/Pragmatic.CakeCI.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>cake;ci;build;automation;dotnet;nuget;docker;sonar</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
