@@ -1,43 +1,15 @@
 using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
-using Moq;
+using NSubstitute;
 using Pragmatic.CakeCI;
 
 namespace Pragmatic.CakeCI.Tests;
 
-public class DockerAliasesTests
+public class DockerAliasesTests : CakeContextTestBase
 {
-    private readonly Mock<ICakeContext> _context;
-    private readonly Mock<ICakeLog> _log;
-    private readonly Mock<ICakeEnvironment> _environment;
-    private readonly Mock<IProcessRunner> _processRunner;
-    private readonly Mock<IProcess> _process;
-    private readonly Mock<IGlobber> _globber;
-
-    public DockerAliasesTests()
-    {
-        _context = new Mock<ICakeContext>();
-        _log = new Mock<ICakeLog>();
-        _environment = new Mock<ICakeEnvironment>();
-        _processRunner = new Mock<IProcessRunner>();
-        _process = new Mock<IProcess>();
-        _globber = new Mock<IGlobber>();
-
-        _processRunner
-            .Setup(pr => pr.Start(It.IsAny<FilePath>(), It.IsAny<ProcessSettings>()))
-            .Returns(_process.Object);
-
-        _environment.Setup(e => e.WorkingDirectory).Returns(new DirectoryPath("."));
-
-        _context.Setup(c => c.Log).Returns(_log.Object);
-        _context.Setup(c => c.ProcessRunner).Returns(_processRunner.Object);
-        _context.Setup(c => c.Environment).Returns(_environment.Object);
-        _context.Setup(c => c.Globber).Returns(_globber.Object);
-    }
-
     [Fact]
-    public void CiLint_WhenDockerLoginSucceeds_LogsSuccess()
+    public void CiDocker_WhenDockerLoginSucceeds_LogsSuccess()
     {
         var args = new ContainerArgs
         {
@@ -45,12 +17,12 @@ public class DockerAliasesTests
             Token = "token",
             UserName = "user",
         };
-        _context.Object.CiDockerLogin(args);
-        _log.LogHasMessage("Docker login successful.");
+        Context.CiDockerLogin(args);
+        Log.LogHasMessage("Docker login successful.");
     }
 
     [Fact]
-    public void CiLint_WhenDockerBuildSucceeds_LogsSuccess()
+    public void CiDocker_WhenDockerBuildSucceeds_LogsSuccess()
     {
         var version = "0.0.1";
         var manifest = new BuildManifest
@@ -67,12 +39,25 @@ public class DockerAliasesTests
 
         var tag = $"{args.Registry}/default-image:{version}";
 
-        _context.Object.CiDockerBuild(manifest, args, version);
-        _log.LogHasMessage($"Docker image built successfully: {tag}");
+        Context.CiDockerBuild(manifest, args, version);
+        Log.LogHasMessage($"Docker image built successfully: {tag}");
     }
 
     [Fact]
-    public void CiLint_WhenDockerPushSucceeds_LogsSuccess()
+    public void CiDocker_WhenDockerLogoutSucceeds_LogsSuccess()
+    {
+        var args = new ContainerArgs
+        {
+            Registry = "ghcr.io/myorg",
+            Token = "token",
+            UserName = "user",
+        };
+        Context.CiDockerLogout(args);
+        Log.LogHasMessage("Docker logout successful.");
+    }
+
+    [Fact]
+    public void CiDocker_WhenDockerPushSucceeds_LogsSuccess()
     {
         var version = "0.0.1";
         var manifest = new BuildManifest
@@ -89,8 +74,8 @@ public class DockerAliasesTests
 
         var tag = $"{args.Registry}/default-image:{version}";
 
-        _context.Object.CiDockerPush(manifest, args, version);
-        _log.LogHasMessage($"Docker image pushed successfully: {tag}");
+        Context.CiDockerPush(manifest, args, version);
+        Log.LogHasMessage($"Docker image pushed successfully: {tag}");
     }
 
     [Theory]
@@ -135,8 +120,6 @@ public class DockerAliasesTests
     [InlineData("a/b/c/DeepService/Dockerfile", "deepservice")]
     public void PathSeparators_ForwardSlash_ShouldExtractDirectoryName(string dockerfilePath, string expectedName)
     {
-        // Verify that Path.GetFileName(GetDirectoryName(...)) correctly handles
-        // forward-slash paths regardless of platform (the fix for the separator issue).
         var directoryName = System.IO.Path.GetDirectoryName(dockerfilePath);
         var packageName = System.IO.Path.GetFileName(directoryName!).ToLowerInvariant();
 
@@ -146,7 +129,6 @@ public class DockerAliasesTests
     [Fact]
     public void PathSeparators_Backslash_ShouldExtractDirectoryName()
     {
-        // On Windows the paths may use backslashes; the fix must handle those too.
         var dockerfilePath = System.IO.Path.Combine("src", "MyApp", "Dockerfile");
         var directoryName = System.IO.Path.GetDirectoryName(dockerfilePath);
         var packageName = System.IO.Path.GetFileName(directoryName!).ToLowerInvariant();

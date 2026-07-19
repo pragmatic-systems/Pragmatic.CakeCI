@@ -1,8 +1,4 @@
-﻿using Pragmatic.CakeCI;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit.Sdk;
+using Pragmatic.CakeCI;
 
 namespace Pragmatic.CakeCI.Tests;
 

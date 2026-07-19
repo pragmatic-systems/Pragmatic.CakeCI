@@ -1,40 +1,12 @@
-﻿using Cake.Core;
+using Cake.Core;
 using Cake.Core.Diagnostics;
 using Cake.Core.IO;
-using Moq;
+using NSubstitute;
 
 namespace Pragmatic.CakeCI.Tests;
 
-public class SonarAliasesTests
+public class SonarAliasesTests : CakeContextTestBase
 {
-    private readonly Mock<ICakeContext> _context;
-    private readonly Mock<ICakeLog> _log;
-    private readonly Mock<ICakeEnvironment> _environment;
-    private readonly Mock<IProcessRunner> _processRunner;
-    private readonly Mock<IProcess> _process;
-    private readonly Mock<IGlobber> _globber;
-
-    public SonarAliasesTests()
-    {
-        _context = new Mock<ICakeContext>();
-        _log = new Mock<ICakeLog>();
-        _environment = new Mock<ICakeEnvironment>();
-        _processRunner = new Mock<IProcessRunner>();
-        _process = new Mock<IProcess>();
-        _globber = new Mock<IGlobber>();
-
-        _processRunner
-            .Setup(pr => pr.Start(It.IsAny<FilePath>(), It.IsAny<ProcessSettings>()))
-            .Returns(_process.Object);
-
-        _environment.Setup(e => e.WorkingDirectory).Returns(new DirectoryPath("."));
-
-        _context.Setup(c => c.Log).Returns(_log.Object);
-        _context.Setup(c => c.ProcessRunner).Returns(_processRunner.Object);
-        _context.Setup(c => c.Environment).Returns(_environment.Object);
-        _context.Setup(c => c.Globber).Returns(_globber.Object);
-    }
-
     [Fact]
     public void SonarScanBegin_ShouldRunSonarScanExecutable()
     {
@@ -48,15 +20,14 @@ public class SonarAliasesTests
             HostUrl = "localhost",
         };
         var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "dotnet-sonarscanner";
+        var proj = "C:\\temp\\sample.csproj";
 
-        _globber
-            .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
-            .Returns(new[] { new FilePath(sonarDll) });
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath(proj) });
 
-        _context.Object.CiSonarScannerBegin(sonarArgs, artifactsFolder);
+        Context.CiSonarScannerBegin(sonarArgs, artifactsFolder);
 
-        _processRunner.ExecutedOnce();
+        ProcessRunner.ExecutedOnce();
     }
 
     [Fact]
@@ -71,17 +42,14 @@ public class SonarAliasesTests
             ProjectKey = "Key",
             HostUrl = "localhost",
         };
-        var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "SonarScanner.MSBuild.dll";
 
-        _globber
-            .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
-            .Returns(new[] { new FilePath(sonarDll) });
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath("SonarScanner.MSBuild.dll") });
 
-        _context.Object.CiSonarScannerEnd(sonarArgs);
+        Context.CiSonarScannerEnd(sonarArgs);
 
-        _processRunner.ExecutedOnce();
-        _log.LogHasMessage("Sonar analysis completed successfully.");
+        ProcessRunner.ExecutedOnce();
+        Log.LogHasMessage("Sonar analysis completed successfully.");
     }
 
     [Fact]
@@ -96,22 +64,16 @@ public class SonarAliasesTests
             ProjectKey = "Key",
             HostUrl = "localhost",
         };
-        var artifactsFolder = "./artifacts/packages";
-        var sonarDll = "SonarScanner.MSBuild.dll";
 
-        _globber
-            .Setup(g => g.Match(It.IsAny<GlobPattern>(), It.IsAny<GlobberSettings>()))
-            .Returns(new[] { new FilePath(sonarDll) });
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath("SonarScanner.MSBuild.dll") });
 
-
-        _process
-            .Setup(pr => pr.GetExitCode())
-            .Returns(1);
+        Process.GetExitCode().Returns(1);
 
         Should
-            .Throw<CakeException>(() => _context.Object.CiSonarScannerEnd(sonarArgs))
+            .Throw<CakeException>(() => Context.CiSonarScannerEnd(sonarArgs))
             .Message.ShouldBe("Sonar analysis failed. (exit code 1)");
 
-        _processRunner.ExecutedOnce();
+        ProcessRunner.ExecutedOnce();
     }
 }

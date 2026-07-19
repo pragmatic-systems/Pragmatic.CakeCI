@@ -43,12 +43,9 @@ jobs:
         uses: cake-build/cake-action@763b621ef69b317c1d6bde43a65f189c936b503b
         with:
           script-path: build.cake
-          target: FullPackAndPush
+          target: NugetPackAndPush
           NugetSource: ${{ vars.PUBLIC_NUGET_SOURCE }}
           NugetApiKey: ${{ secrets.PUBLIC_NUGET_APIKEY }}
-          ContainerRegistry: ${{ vars.PRIVATE_CONTAINER_REGISTRY }}
-          ContainerRegistryToken: ${{ secrets.GITHUB_TOKEN }}
-          ContainerRegistryUserName: ${{ vars.PRIVATE_CONTAINER_REGISTRY_USERNAME }}
           SonarOrg: ${{ vars.SONARORG }}
           SonarToken: ${{ secrets.SONARTOKEN }}
           SonarHostUrl: ${{ vars.SONARHOST }}

@@ -5,7 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Pragmatic.CakeCI</PackageId>
-    <Version>0.1.0</Version>
     <Authors>Pragmatic</Authors>
     <Description>Cake CI aliases for Pragmatic build tooling</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>

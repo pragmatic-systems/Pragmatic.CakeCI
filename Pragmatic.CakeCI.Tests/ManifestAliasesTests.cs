@@ -1,19 +1,19 @@
 using Cake.Core;
-using Moq;
+using NSubstitute;
 
 namespace Pragmatic.CakeCI.Tests;
 
 public class ManifestAliasesTests
 {
-    private readonly Mock<ICakeContext> _context;
-    private readonly Mock<ICakeEnvironment> _environment;
+    private readonly ICakeContext _context;
+    private readonly ICakeEnvironment _environment;
 
     public ManifestAliasesTests()
     {
-        _context = new Mock<ICakeContext>();
-        _environment = new Mock<ICakeEnvironment>();
+        _context = Substitute.For<ICakeContext>();
+        _environment = Substitute.For<ICakeEnvironment>();
 
-        _context.Setup(c => c.Environment).Returns(_environment.Object);
+        _context.Environment.Returns(_environment);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class ManifestAliasesTests
 
         try
         {
-            var result = _context.Object.LoadBuildManifest(tempFile);
+            var result = _context.LoadBuildManifest(tempFile);
 
             result.ShouldNotBeNull();
             result.NugetPackages.ShouldContain("./src/A.csproj");
@@ -53,7 +53,7 @@ public class ManifestAliasesTests
 
         try
         {
-            var result = _context.Object.LoadBuildManifest(tempFile);
+            var result = _context.LoadBuildManifest(tempFile);
 
             result.ShouldNotBeNull();
             File.Exists(tempFile).ShouldBeTrue("manifest file should be auto-created");
@@ -84,7 +84,7 @@ public class ManifestAliasesTests
 
         try
         {
-            var result = _context.Object.LoadBuildManifest();
+            var result = _context.LoadBuildManifest();
 
             result.ShouldNotBeNull();
         }
