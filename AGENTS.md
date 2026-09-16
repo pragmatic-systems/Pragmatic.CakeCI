@@ -10,3 +10,7 @@ If `NUGET_PACKAGES` is set, the cache lives there instead of `~/.nuget/packages`
 
 If git fails with `fatal: detected dubious ownership`, it's the 9p mount showing files as `root:root` while the agent runs as a different uid — run `git config --global --add safe.directory /home/appuser/mount/Pragmatic.CQRS` (idempotent; needed again after a container rebuild). 
 Never happens on the Windows host.
+
+## Dogfood Loop
+
+This repo is built using a dogfood process where it runs its own cake script on its own compiled binaries. See .pi/skills/dogfood-loop.md
