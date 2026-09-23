@@ -85,7 +85,7 @@ public class SonarAliasesTests : CakeContextTestBase
             Arg.Any<FilePath>(),
             Arg.Is<ProcessSettings>(s => s.Arguments.Render().Contains("\"/d:sonar.exclusions=**/My Scripts/*.sql\"")));
     }
-    
+
     [Fact]
     public void SonarScanEnd_WhenSuccesfull_ShouldRunSonarScanExecutable()
     {
