@@ -15,6 +15,7 @@ public class SonarArgsTests
             ProjectName = string.Empty,
             Branch = string.Empty,
             HostUrl = string.Empty,
+            AdditionalProperties = null
         };
 
         Should
@@ -42,26 +43,11 @@ public class SonarArgsTests
             .Message.ShouldBe("SonarProjectName is required.");
 
         args.ProjectName = "ProjectName";
-        args.Validate();
-    }
+        Should
+            .Throw<ArgumentException>(() => args.Validate())
+            .Message.ShouldBe("SonarAdditionalProperties cannot be null.");
 
-    [Fact]
-    public void SonarArgs_WithAdditionalProperties_ShouldValidate()
-    {
-        var args = new SonarArgs
-        {
-            Org = "Org",
-            Token = "Token",
-            ProjectKey = "ProjectKey",
-            ProjectName = "ProjectName",
-            Branch = "Branch",
-            HostUrl = "HostUrl",
-            AdditionalProperties = new Dictionary<string, string>
-            {
-                ["sonar.exclusions"] = "**/Scripts/*.sql"
-            },
-        };
-
+        args.AdditionalProperties = new Dictionary<string, string>();
         args.Validate();
     }
 
