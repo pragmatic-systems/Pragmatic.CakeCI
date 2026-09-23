@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## [1.0.1] — 2026-09-23
 
 ### Added
 - `SonarArgs.AdditionalProperties` — pass extra Sonar analysis properties (e.g. `sonar.exclusions`) to `dotnet-sonarscanner begin` as `/d:key=value`. Keys are full property names without the `/d:` prefix; values for built-in properties (e.g. `sonar.qualitygate.wait`) override the defaults. Each property is emitted exactly once — the scanner hard-fails on duplicate `/d:` keys.
