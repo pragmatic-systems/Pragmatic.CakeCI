@@ -30,4 +30,10 @@
     <ProjectReference Include="..\Pragmatic.CakeCI\Pragmatic.CakeCI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Scripts\0001_Create_Tables.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
