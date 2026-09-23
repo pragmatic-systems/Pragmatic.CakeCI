@@ -116,7 +116,8 @@ public static class CoreAliases
                 .Append("--configuration")
                 .Append("Release")
                 .Append("--artifacts")
-                .AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
+                .AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName))
+                .Append("--memory");
 
             ProcessHelper.Run(context, DotnetExe, args, $"Benchmark failed: {benchName}");
         }
