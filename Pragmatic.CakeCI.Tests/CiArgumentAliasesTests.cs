@@ -63,7 +63,7 @@ public class CiArgumentAliasesTests
         var key = "Key";
         var value = "Value";
 
-        _cakeArguments.GetArguments(key).Returns(new string[0]);
+        _cakeArguments.GetArguments(key).Returns(Array.Empty<string>());
 
         var result = _context.CiArgument(key, value);
         result.ShouldBe(value);

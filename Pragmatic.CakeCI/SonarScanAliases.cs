@@ -23,6 +23,8 @@ public static class SonarScanAliases
     [CakeAliasCategory("Sonar")]
     public static void CiSonarScannerBegin(this ICakeContext context, SonarArgs sonarArgs, string artifactsFolder)
     {
+        sonarArgs.Validate();
+
         // Discover coverage report paths from test projects
         var testProjects = context.Globber
             .Match("**/*.Tests.csproj")
@@ -36,19 +38,34 @@ public static class SonarScanAliases
         var reportPaths = string.Join(",", reports);
         context.Log.Information($"Sonar coverage report paths: {reportPaths}");
 
-        // Run dotnet-sonarscanner begin
+        // Built-in analysis properties; AdditionalProperties values override them.
+        var properties = new Dictionary<string, string>
+        {
+            ["sonar.token"] = sonarArgs.Token,
+            ["sonar.branch.name"] = sonarArgs.Branch,
+            ["sonar.host.url"] = sonarArgs.HostUrl,
+            ["sonar.cs.vscoveragexml.reportsPaths"] = reportPaths,
+            ["sonar.qualitygate.wait"] = "true",
+            ["sonar.verbose"] = "true"
+        };
+
+        foreach (var (key, value) in sonarArgs.AdditionalProperties)
+        {
+            properties[key] = value;
+            context.Log.Information($"Sonar additional property: {key}");
+        }
+
+        // Run dotnet-sonarscanner begin.
         var beginArgs = new ProcessArgumentBuilder()
             .Append("dotnet-sonarscanner")
             .Append("begin")
             .Append($"/key:{sonarArgs.ProjectKey}")
             .Append($"/name:{sonarArgs.ProjectName}")
-            .Append($"/organization:{sonarArgs.Org}")
-            .Append($"/d:sonar.token={sonarArgs.Token}")
-            .Append($"/d:sonar.branch.name={sonarArgs.Branch}")
-            .Append($"/d:sonar.host.url={sonarArgs.HostUrl}")
-            .Append($"/d:sonar.cs.vscoveragexml.reportsPaths={reportPaths}")
-            .Append("/d:sonar.qualitygate.wait=true")
-            .Append("/d:sonar.verbose=true");
+            .Append($"/organization:{sonarArgs.Org}");
+
+        // Bind properties
+        foreach (var (key, value) in properties)
+            beginArgs.AppendQuoted($"/d:{key}={value}");
 
         ProcessHelper.Run(context, "dotnet", beginArgs, "Sonar scanner begin failed.");
     }

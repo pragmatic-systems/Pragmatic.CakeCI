@@ -32,8 +32,13 @@ var sonarArgs = new SonarArgs
     Token = CiArgument("SonarToken"),
     ProjectKey = CiArgument("SonarProjectKey"),
     ProjectName = CiArgument("SonarProjectName"),
-	Branch = CiArgument("SonarBranch"),
-    HostUrl = CiArgument("SonarHostUrl", "http://localhost:9000")
+    Branch = CiArgument("SonarBranch"),
+    HostUrl = CiArgument("SonarHostUrl", "http://localhost:9000"),
+    AdditionalProperties = new Dictionary<string, string>
+    {
+        // Exclude the Scripts files from scan - We use Postgres, but sonar scans Oracle by default.
+        ["sonar.exclusions"] = "**/Scripts/*.sql"
+    }
 };
 
 // Artifact Folders

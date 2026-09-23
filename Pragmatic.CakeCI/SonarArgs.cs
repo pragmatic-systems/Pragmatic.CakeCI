@@ -38,6 +38,12 @@ public class SonarArgs
     public required string HostUrl { get; set; }
 
     /// <summary>
+    /// Extra Sonar analysis properties, passed to the scanner as <c>/d:key=value</c>.
+    /// Overrides defaults set by the build.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> AdditionalProperties { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>
     /// Validates that all required Sonar arguments are present.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when a required argument is missing.</exception>
@@ -57,5 +63,17 @@ public class SonarArgs
 
         if (string.IsNullOrEmpty(ProjectName))
             throw new ArgumentException("SonarProjectName is required.");
+
+        if (AdditionalProperties is null)
+            throw new ArgumentException("SonarAdditionalProperties cannot be null.");
+
+        foreach (var key in AdditionalProperties.Keys)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Sonar additional property key is empty.");
+
+            if (key.StartsWith("/d:", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException($"Sonar additional property key '{key}' must not include the '/d:' prefix.");
+        }
     }
 }

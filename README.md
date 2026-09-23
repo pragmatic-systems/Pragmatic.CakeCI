@@ -139,6 +139,21 @@ This project targets the **Microsoft Testing Platform** test runner and assumes 
 | `CiArgument(name)` | Arguments | Resolve CI argument from CLI → env var → GitHub `INPUT_*` fallback chain |
 | `CiArgument(name, default)` | Arguments | Same as above with a default value |
 
+### Sonar extra properties
+
+`SonarArgs.AdditionalProperties` passes arbitrary Sonar analysis properties to `dotnet-sonarscanner begin` as `/d:key=value`. Keys are full property names **without** the `/d:` prefix; Overrides defaults.
+
+```csharp
+var sonarArgs = new SonarArgs
+{
+    // ...required properties...
+    AdditionalProperties = new Dictionary<string, string>
+    {
+        ["sonar.exclusions"] = "**/Scripts/*.sql"
+    }
+};
+```
+
 ### Argument Resolution
 
 `CiArgument()` resolves values using a three-tier fallback:
