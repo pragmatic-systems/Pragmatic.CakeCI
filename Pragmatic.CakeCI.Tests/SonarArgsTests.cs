@@ -44,4 +44,68 @@ public class SonarArgsTests
         args.ProjectName = "ProjectName";
         args.Validate();
     }
+
+    [Fact]
+    public void SonarArgs_WithAdditionalProperties_ShouldValidate()
+    {
+        var args = new SonarArgs
+        {
+            Org = "Org",
+            Token = "Token",
+            ProjectKey = "ProjectKey",
+            ProjectName = "ProjectName",
+            Branch = "Branch",
+            HostUrl = "HostUrl",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                ["sonar.exclusions"] = "**/Scripts/*.sql"
+            },
+        };
+
+        args.Validate();
+    }
+
+    [Fact]
+    public void SonarArgs_WithEmptyAdditionalPropertyKey_ShouldFail()
+    {
+        var args = new SonarArgs
+        {
+            Org = "Org",
+            Token = "Token",
+            ProjectKey = "ProjectKey",
+            ProjectName = "ProjectName",
+            Branch = "Branch",
+            HostUrl = "HostUrl",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                [""] = "value"
+            },
+        };
+
+        Should
+            .Throw<ArgumentException>(() => args.Validate())
+            .Message.ShouldBe("Sonar additional property key is empty.");
+    }
+
+    [Fact]
+    public void SonarArgs_WithPrefixedAdditionalPropertyKey_ShouldFail()
+    {
+        var args = new SonarArgs
+        {
+            Org = "Org",
+            Token = "Token",
+            ProjectKey = "ProjectKey",
+            ProjectName = "ProjectName",
+            Branch = "Branch",
+            HostUrl = "HostUrl",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                ["/d:sonar.exclusions"] = "**/Scripts/*.sql"
+            },
+        };
+
+        Should
+            .Throw<ArgumentException>(() => args.Validate())
+            .Message.ShouldBe("Sonar additional property key '/d:sonar.exclusions' must not include the '/d:' prefix.");
+    }
 }

@@ -31,6 +31,116 @@ public class SonarAliasesTests : CakeContextTestBase
     }
 
     [Fact]
+    public void SonarScanBegin_WithAdditionalProperties_ShouldAppendDynamicProperties()
+    {
+        var sonarArgs = new SonarArgs
+        {
+            Org = "Org",
+            Branch = "Branch",
+            Token = "Token",
+            ProjectName = "Name",
+            ProjectKey = "Key",
+            HostUrl = "localhost",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                ["sonar.exclusions"] = "**/Scripts/*.sql"
+            },
+        };
+        var proj = "C:\\temp\\sample.Tests.csproj";
+
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath(proj) });
+
+        Context.CiSonarScannerBegin(sonarArgs, "./artifacts/packages");
+
+        ProcessRunner.Received(1).Start(
+            Arg.Any<FilePath>(),
+            Arg.Is<ProcessSettings>(s => s.Arguments.Render().Contains("/d:sonar.exclusions=**/Scripts/*.sql")));
+    }
+
+    [Fact]
+    public void SonarScanBegin_WithAdditionalPropertyOverridingBuiltIn_ShouldEmitPropertyOnce()
+    {
+        var sonarArgs = new SonarArgs
+        {
+            Org = "Org",
+            Branch = "Branch",
+            Token = "Token",
+            ProjectName = "Name",
+            ProjectKey = "Key",
+            HostUrl = "localhost",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                ["sonar.qualitygate.wait"] = "false"
+            },
+        };
+        var proj = "C:\\temp\\sample.Tests.csproj";
+
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath(proj) });
+
+        Context.CiSonarScannerBegin(sonarArgs, "./artifacts/packages");
+
+        ProcessRunner.Received(1).Start(
+            Arg.Any<FilePath>(),
+            Arg.Is<ProcessSettings>(s =>
+                s.Arguments.Render().Contains("/d:sonar.qualitygate.wait=false")
+                    && !s.Arguments.Render().Contains("/d:sonar.qualitygate.wait=true")));
+    }
+
+    [Fact]
+    public void SonarScanBegin_WithAdditionalPropertyValueContainingSpace_ShouldQuoteValue()
+    {
+        var sonarArgs = new SonarArgs
+        {
+            Org = "Org",
+            Branch = "Branch",
+            Token = "Token",
+            ProjectName = "Name",
+            ProjectKey = "Key",
+            HostUrl = "localhost",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                ["sonar.exclusions"] = "**/My Scripts/*.sql"
+            },
+        };
+        var proj = "C:\\temp\\sample.Tests.csproj";
+
+        Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
+            .Returns(new[] { new FilePath(proj) });
+
+        Context.CiSonarScannerBegin(sonarArgs, "./artifacts/packages");
+
+        ProcessRunner.Received(1).Start(
+            Arg.Any<FilePath>(),
+            Arg.Is<ProcessSettings>(s => s.Arguments.Render().Contains("\"/d:sonar.exclusions=**/My Scripts/*.sql\"")));
+    }
+
+    [Fact]
+    public void SonarScanBegin_WithEmptyAdditionalPropertyKey_ShouldThrowAndNotRunScanner()
+    {
+        var sonarArgs = new SonarArgs
+        {
+            Org = "Org",
+            Branch = "Branch",
+            Token = "Token",
+            ProjectName = "Name",
+            ProjectKey = "Key",
+            HostUrl = "localhost",
+            AdditionalProperties = new Dictionary<string, string>
+            {
+                [""] = "value"
+            },
+        };
+
+        Should
+            .Throw<ArgumentException>(() => Context.CiSonarScannerBegin(sonarArgs, "./artifacts/packages"))
+            .Message.ShouldBe("Sonar additional property key is empty.");
+
+        ProcessRunner.DidNotReceive().Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>());
+    }
+
+    [Fact]
     public void SonarScanEnd_WhenSuccesfull_ShouldRunSonarScanExecutable()
     {
         var sonarArgs = new SonarArgs
