@@ -17,4 +17,17 @@ public static class TestExtensions
     {
         processRunner.Received(1).Start(Arg.Any<FilePath>(), Arg.Any<ProcessSettings>());
     }
+
+    public static void ExecutedWithArgs(this IProcessRunner processRunner, params string[] argSubstrings)
+    {
+        processRunner.Received(1)
+            .Start(Arg.Any<FilePath>(),
+                Arg.Is<ProcessSettings>(s => s.Contains(argSubstrings)));
+    }
+
+    private static bool Contains(this ProcessSettings processSetting, string[] argSubstrings)
+    {
+        var args = string.Join(" ", processSetting.Arguments);
+        return argSubstrings.All(sub => args.Contains(sub));
+    }
 }

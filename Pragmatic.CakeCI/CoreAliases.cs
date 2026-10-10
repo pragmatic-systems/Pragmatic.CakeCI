@@ -94,7 +94,7 @@ public static class CoreAliases
 
     [CakeMethodAlias]
     [CakeAliasCategory("Benchmark")]
-    public static void CiBenchmark(this ICakeContext context)
+    public static void CiBenchmark(this ICakeContext context, int warmup = 5, int iteration = 10)
     {
         var scriptDirectory = context.Environment.WorkingDirectory;
         var artifactsFolder = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
@@ -107,7 +107,7 @@ public static class CoreAliases
         foreach (var benchmarkProject in benchmarkProjects)
         {
             var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmarkProject);
-            context.Log.Information($"Benchmarking {benchName}...");
+            context.Log.Information($"Benchmarking {benchName} (warmup: {warmup}, iteration: {iteration})...");
 
             var args = new ProcessArgumentBuilder()
                 .Append("run")
@@ -117,7 +117,11 @@ public static class CoreAliases
                 .Append("Release")
                 .Append("--artifacts")
                 .AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName))
-                .Append("--memory");
+                .Append("--memory")
+                .Append("--warmup")
+                .Append(warmup.ToString())
+                .Append("--iteration")
+                .Append(iteration.ToString());
 
             ProcessHelper.Run(context, DotnetExe, args, $"Benchmark failed: {benchName}");
         }
