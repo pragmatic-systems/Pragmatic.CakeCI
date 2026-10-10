@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.2] — 2026-10-10
+
+### Added
+- `CiBenchmark` accepts optional `maxWarmup` (default 10) and `maxIteration` (default 20) parameters, capping BenchmarkDotNet's warmup and measurement iteration counts (`--maxWarmupCount`/`--maxIterationCount`).
+
+### Changed
+- Process output (stdout/stderr) now streams line-by-line to the Cake log as it is produced, instead of being buffered in memory and printed after the process exits (previously truncated to the last 256 lines).
+- Stdout capture is now opt-in where needed (e.g. GitVersion), reducing memory pressure for long-running processes.
+
 ## [1.0.1] — 2026-09-23
 
 ### Added
