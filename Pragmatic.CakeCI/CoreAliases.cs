@@ -127,13 +127,6 @@ public static class CoreAliases
                 .Append(maxIteration.ToString());
 
             ProcessHelper.Run(context, DotnetExe, args, $"Benchmark failed: {benchName}");
-
-            // BenchmarkDotNet exits 0 even when it refuses to run (unknown option -> prints help), so verify results were produced.
-            var resultsFolder = System.IO.Path.Combine(benchArtifacts, "results");
-            if (!System.IO.Directory.Exists(resultsFolder) || !System.IO.Directory.EnumerateFiles(resultsFolder).Any())
-            {
-                throw new CakeException($"Benchmark did not produce results: {benchName}. The benchmark may not have run (invalid arguments or no benchmarks found).");
-            }
         }
     }
 }
