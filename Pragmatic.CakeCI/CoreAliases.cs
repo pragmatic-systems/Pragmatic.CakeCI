@@ -94,7 +94,7 @@ public static class CoreAliases
 
     [CakeMethodAlias]
     [CakeAliasCategory("Benchmark")]
-    public static void CiBenchmark(this ICakeContext context)
+    public static void CiBenchmark(this ICakeContext context, int maxWarmup = 10, int maxIteration = 20)
     {
         var scriptDirectory = context.Environment.WorkingDirectory;
         var artifactsFolder = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
@@ -107,8 +107,11 @@ public static class CoreAliases
         foreach (var benchmarkProject in benchmarkProjects)
         {
             var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmarkProject);
-            context.Log.Information($"Benchmarking {benchName}...");
+            context.Log.Information($"Benchmarking {benchName} (maxWarmup: {maxWarmup}, maxIteration: {maxIteration})...");
 
+            var benchArtifacts = System.IO.Path.Combine(artifactsFolder, benchName);
+
+            // Caps only: pin min to 1 so BDN's heuristic picks the count (its min defaults of 6/15 would otherwise beat the caps).
             var args = new ProcessArgumentBuilder()
                 .Append("run")
                 .Append("--project")
@@ -116,7 +119,12 @@ public static class CoreAliases
                 .Append("--configuration")
                 .Append("Release")
                 .Append("--artifacts")
-                .AppendQuoted(System.IO.Path.Combine(artifactsFolder, benchName));
+                .AppendQuoted(benchArtifacts)
+                .Append("--memory")
+                .Append("--maxWarmupCount")
+                .Append(maxWarmup.ToString())
+                .Append("--maxIterationCount")
+                .Append(maxIteration.ToString());
 
             ProcessHelper.Run(context, DotnetExe, args, $"Benchmark failed: {benchName}");
         }

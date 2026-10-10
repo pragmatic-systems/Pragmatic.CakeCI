@@ -103,10 +103,11 @@ public class CoreAliasesTests : CakeContextTestBase
         Globber.Match(Arg.Any<GlobPattern>(), Arg.Any<GlobberSettings>())
             .Returns(new Cake.Core.IO.Path[] { new FilePath("./src/MyApp.Benchmark/MyApp.Benchmark.csproj") });
 
-        Context.CiBenchmark();
+        Context.CiBenchmark(maxWarmup: 3, maxIteration: 4);
 
         var message = "Benchmarking";
         ProcessRunner.ExecutedOnce();
+        ProcessRunner.ExecutedWithArgs("--maxWarmupCount 3", "--maxIterationCount 4");
         Log.LogHasMessage(message);
     }
 }

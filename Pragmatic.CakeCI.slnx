@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Pragmatic.CakeCI.Benchmark/Pragmatic.CakeCI.Benchmark.csproj" />
   <Project Path="Pragmatic.CakeCI.Tests/Pragmatic.CakeCI.Tests.csproj" />
   <Project Path="Pragmatic.CakeCI/Pragmatic.CakeCI.csproj" />
 </Solution>
