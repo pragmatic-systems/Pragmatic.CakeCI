@@ -68,8 +68,10 @@ public static class CoreAliases
         context.Log.Information("Resolving version from GitVersion...");
 
         var args = new ProcessArgumentBuilder().Append("gitversion");
-        var output = ProcessHelper.Run(context, DotnetExe, args, "GitVersion failed")
-            ?? throw new CakeException("GitVersion returned no output.");
+        var output = ProcessHelper.RunCapture(context, DotnetExe, args, "GitVersion failed");
+
+        if (string.IsNullOrEmpty(output))
+            throw new CakeException("GitVersion returned no output.");
 
         try
         {
