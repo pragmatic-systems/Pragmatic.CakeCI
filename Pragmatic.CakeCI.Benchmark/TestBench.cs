@@ -9,4 +9,10 @@ public class TestBench
     {
         return Task.CompletedTask;
     }
+
+    [Benchmark]
+    public byte[] AllocateMemory()
+    {
+        return new byte[4096];
+    }
 }
