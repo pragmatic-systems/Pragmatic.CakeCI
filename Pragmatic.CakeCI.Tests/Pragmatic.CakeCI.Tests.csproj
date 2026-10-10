@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pragmatic.CakeCI\Pragmatic.CakeCI.csproj" />
+    <ProjectReference Include="..\Pragmatic.CakeCI.Benchmark\Pragmatic.CakeCI.Benchmark.csproj" />
   </ItemGroup>
 
 </Project>
