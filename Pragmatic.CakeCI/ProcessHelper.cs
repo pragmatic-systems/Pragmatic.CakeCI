@@ -9,54 +9,71 @@ namespace Pragmatic.CakeCI;
 /// </summary>
 internal static class ProcessHelper
 {
-    private const int MaxLogLines = 256;
+    /// <summary>
+    /// Runs a process, streaming stdout/stderr to the log line-by-line as it is produced,
+    /// and throws on non-zero exit codes.
+    /// </summary>
+    /// <param name="context">The Cake context.</param>
+    /// <param name="exe">The executable to run.</param>
+    /// <param name="arguments">The arguments to pass.</param>
+    /// <param name="errorMessage">Message to include in the exception on failure.</param>
+    /// <exception cref=CakeException>Thrown when the process exits with a non-zero code.</exception>
+    public static void Run(ICakeContext context, string exe, ProcessArgumentBuilder arguments, string errorMessage)
+    {
+        var settings = CreateProcessSettings(context, exe, arguments, captureStdout: false);
+
+        using var result = context.ProcessRunner.Start(exe, settings);
+        result.WaitForExit();
+
+        var exitCode = result.GetExitCode();
+        if (exitCode != 0)
+        {
+            throw new CakeException($"{errorMessage} (exit code {exitCode})");
+        }
+    }
 
     /// <summary>
-    /// Runs a process, logs stdout/stderr, and throws on non-zero exit codes.
+    /// Runs a process, streaming stdout/stderr to the log line-by-line as it is produced,
+    /// captures stdout, and throws on non-zero exit codes.
     /// </summary>
     /// <param name="context">The Cake context.</param>
     /// <param name="exe">The executable to run.</param>
     /// <param name="arguments">The arguments to pass.</param>
     /// <param name="errorMessage">Message to include in the exception on failure.</param>
     /// <returns>Captured stdout.</returns>
-    /// <exception cref=CakeException">Thrown when the process exits with a non-zero code.</exception>
-    public static string? Run(ICakeContext context, string exe, ProcessArgumentBuilder arguments, string errorMessage)
+    /// <exception cref=CakeException>Thrown when the process exits with a non-zero code.</exception>
+    public static string RunCapture(ICakeContext context, string exe, ProcessArgumentBuilder arguments, string errorMessage)
     {
-        var settings = new ProcessSettings
-        {
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            Arguments = arguments,
-        };
+        var settings = CreateProcessSettings(context, exe, arguments, captureStdout: true);
 
         using var result = context.ProcessRunner.Start(exe, settings);
         result.WaitForExit();
 
         var exitCode = result.GetExitCode();
-
-        var stdout = string.Join("\n", result.GetStandardOutput().Take(MaxLogLines));
-        var stderr = string.Join("\n", result.GetStandardError().Take(MaxLogLines));
-
-        // Log stdout if captured
-        if (!string.IsNullOrEmpty(stdout))
-        {
-            context.Log.Information($"[{exe}] stdout:\n{stdout}");
-        }
-
-        // Log stderr always (when available)
-        if (!string.IsNullOrEmpty(stderr))
-        {
-            if (exitCode != 0)
-                context.Log.Error($"[{exe}] stderr:\n{stderr}");
-            else
-                context.Log.Warning($"[{exe}] stderr:\n{stderr}");
-        }
-
         if (exitCode != 0)
         {
             throw new CakeException($"{errorMessage} (exit code {exitCode})");
         }
 
-        return stdout;
+        return string.Join("\n", result.GetStandardOutput());
     }
+
+    private static ProcessSettings CreateProcessSettings(ICakeContext context, string exe, ProcessArgumentBuilder arguments, bool captureStdout) => new ProcessSettings
+    {
+        RedirectStandardError = true,
+        RedirectStandardOutput = true,
+        Arguments = arguments,
+        // Handlers fire per line as output is produced, so we log in real time (no truncation).
+        // Returning null drops the line from Cake's internal buffer, so nothing is retained in memory.
+        RedirectedStandardOutputHandler = line =>
+        {
+            context.Log.Information($"[{exe}] {line}");
+            return captureStdout ? line : null;
+        },
+        RedirectedStandardErrorHandler = line =>
+        {
+            context.Log.Warning($"[{exe}] {line}");
+            return null;
+        },
+    };
 }
