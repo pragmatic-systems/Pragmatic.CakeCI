@@ -91,7 +91,7 @@ Task("BuildAndTest")
     .Does(() => CiTest());
 
 Task("BuildAndBenchmark")
-    .Does(() => CiBenchmark());
+    .Does(() => CiBenchmark(buildManifest));
 
 Task("BuildAndSonarScan")
     .IsDependentOn("__LintCheck")
@@ -101,12 +101,13 @@ Task("BuildAndSonarScan")
         try
         {
             CiTest();
-            CiBenchmark();
         }
         finally
         {
             CiSonarScannerEnd(sonarArgs);
         }
+
+        CiBenchmark(buildManifest);
     });
 
 Task("NugetPackAndPush")
@@ -119,13 +120,14 @@ Task("NugetPackAndPush")
         try
         {
             CiTest();
-            CiBenchmark();
             CiNugetPack(buildManifest, packagesFolder, versionNumber);
         }
         finally
         {
             CiSonarScannerEnd(sonarArgs);
         }
+        
+        CiBenchmark(buildManifest);
 
         CiNugetPush(nugetArgs, packagesFolder);
     });
@@ -140,13 +142,14 @@ Task("DockerPackAndPush")
         try
         {
             CiTest();
-            CiBenchmark();
             CiDockerBuild(buildManifest, containerArgs, versionNumber);
         }
         finally
         {
             CiSonarScannerEnd(sonarArgs);
         }
+        
+        CiBenchmark(buildManifest);
 
         try
         {
@@ -170,7 +173,6 @@ Task("FullPackAndPush")
         try
         {
             CiTest();
-            CiBenchmark();
             CiNugetPack(buildManifest, packagesFolder, versionNumber);
             CiDockerBuild(buildManifest, containerArgs, versionNumber);
         }
@@ -179,6 +181,8 @@ Task("FullPackAndPush")
             CiSonarScannerEnd(sonarArgs);
         }
         
+        CiBenchmark(buildManifest);
+
         try
         {
             CiDockerLogin(containerArgs);
@@ -196,7 +200,7 @@ Task("Default")
     .Does(() =>
     {
         CiTest();
-        CiBenchmark();
+        CiBenchmark(buildManifest);
     });
 
 RunTarget(target);
