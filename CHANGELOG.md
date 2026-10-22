@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.3] — 2026-10-22
+
+### Changed
+- BREAKING CHANGE: `CiBenchmark(BuildManifest buildManifest)` now requires the build manifest and no longer always runs all project benchmarks.
+- Moved Benchmark out of Sonar Scan in sample script to reduce locking.
+
+## [1.0.2] — 2026-10-11
+
+### Changed
+- Reduce benchmark iteration defaults for `CiBenchmark(int maxWarmup = 10, int maxIteration = 20)` and make `maxWarmup` and `maxIteration` optional overrides.
+- Stream full logs instead of truncate.
+
 ## [1.0.1] — 2026-09-23
 
 ### Added

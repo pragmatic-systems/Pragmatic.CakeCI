@@ -94,17 +94,12 @@ public static class CoreAliases
 
     [CakeMethodAlias]
     [CakeAliasCategory("Benchmark")]
-    public static void CiBenchmark(this ICakeContext context, int maxWarmup = 10, int maxIteration = 20)
+    public static void CiBenchmark(this ICakeContext context, BuildManifest buildManifest, int maxWarmup = 10, int maxIteration = 20)
     {
         var scriptDirectory = context.Environment.WorkingDirectory;
         var artifactsFolder = System.IO.Path.Combine(scriptDirectory.FullPath, "artifacts");
 
-        var benchmarkProjects = context.Globber
-            .Match("**/*.Benchmark.csproj")
-            .Select(p => p.FullPath)
-            .ToArray();
-
-        foreach (var benchmarkProject in benchmarkProjects)
+        foreach (var benchmarkProject in buildManifest.Benchmarks)
         {
             var benchName = System.IO.Path.GetFileNameWithoutExtension(benchmarkProject);
             context.Log.Information($"Benchmarking {benchName} (maxWarmup: {maxWarmup}, maxIteration: {maxIteration})...");
